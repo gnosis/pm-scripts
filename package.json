@@ -1,0 +1,28 @@
+{
+  "name": "gnosis-sdk-utils",
+  "version": "0.0.1",
+  "description": "NodeJS utils for handling markets' operations like creation and resolution.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnosis/gnosis-sdk-utils.git"
+  },
+  "keywords": [
+    "GnosisJS",
+    "Gnosis"
+  ],
+  "author": "Gnosis LTD",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gnosis/gnosis-sdk-utils/issues"
+  },
+  "homepage": "https://github.com/gnosis/gnosis-sdk-utils#readme",
+  "devDependencies": {
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.18.1",
+    "mocha": "^5.0.1"
+  }
+}
