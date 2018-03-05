@@ -12,13 +12,17 @@ class ConfigValidator extends BaseValidator {
         'validators': ['required']
       },
       {
-        'name': 'ethereumNodeUrl',
-        'validators': ['required', 'httpUrl']
+        'name': 'blockchain',
+        'validators': ['httpObject']
       },
       {
         'name': 'collateralToken',
         'validators': ['requiredEthAddress']
       }
+      // {
+      //   'name': 'account',
+      //   'validators': ['requiredEthAddress', 'hasBalance']
+      // }
     ]
   }
 
@@ -44,6 +48,8 @@ class ConfigValidator extends BaseValidator {
   isValid () {
     // Load configuration
     this.load()
+    // Verify if has read/write permissions
+
     // Do validation
     for (let x = 0; x < this._fields.length; x++) {
       const field = this._fields[x]
@@ -58,6 +64,9 @@ class ConfigValidator extends BaseValidator {
         }
       })
     }
+
+    // Normalize configuration (eth address lowercase, inject wallet instance etc.)
+
     return true
   }
 }

@@ -1,9 +1,21 @@
 {
   "mnemonic": "Lorem ipsum dolor sit amet",
   "account": "",
-  "ethereumNodeUrl": "http://localhost:8545",
-  "gnosisDBUrl": "",
-  "ipfsUrl": "",
+  "blockchain": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": "8545"
+  },
+  "gnosisDB": {
+    "protocol": "",
+    "host": "",
+    "port": ""
+  },
+  "ipfs": {
+    "protocol": "",
+    "host": "",
+    "port": ""
+  },
   "gasPrice": "",
   "collateralToken": "0x123456789a123456789a123456789a123456789"
 }

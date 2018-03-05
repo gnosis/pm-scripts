@@ -17,6 +17,10 @@ class BaseValidator {
     const regexResult = value.match(webUrlRegex)
     return (this.required(value) && regexResult !== null && regexResult.length > 0)
   }
+
+  httpObject(httpObj) {
+    return (this.required(httpObj.protocol) && this.required(httpObj.host) && this.required(httpObj.port))
+  }
 }
 
 module.exports = BaseValidator

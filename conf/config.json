@@ -1,9 +1,21 @@
 {
   "mnemonic": "",
   "account": "",
-  "ethereumNodeUrl": "",
-  "gnosisDBUrl": "",
-  "ipfsUrl": "",
+  "blockchain": {
+    "protocol": "",
+    "host": "",
+    "port": ""
+  },
+  "gnosisDB": {
+    "protocol": "",
+    "host": "",
+    "port": ""
+  },
+  "ipfs": {
+    "protocol": "",
+    "host": "",
+    "port": ""
+  },
   "gasPrice": "",
   "collateralToken": ""
 }
