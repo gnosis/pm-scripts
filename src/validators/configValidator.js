@@ -1,9 +1,10 @@
+import BaseValidator from './baseValidator'
 import ValidationError from './exceptions'
-import { ETH_ADDRESS_LENGTH } from '../constants'
 import fs from 'fs'
 
-class ConfigValidator {
+class ConfigValidator extends BaseValidator {
   constructor (configPath) {
+    super()
     this._configPath = configPath
     this._fields = [
       {
@@ -12,24 +13,13 @@ class ConfigValidator {
       },
       {
         'name': 'ethereumNodeUrl',
-        'validators': ['required']
+        'validators': ['required', 'httpUrl']
       },
       {
         'name': 'collateralToken',
         'validators': ['requiredEthAddress']
       }
     ]
-  }
-
-  /**
-  * Validators
-  */
-  required (value) {
-    return (value !== null && value !== undefined && value.trim().length > 0)
-  }
-
-  requiredEthAddress (value) {
-    return (this.required(value) && value.trim().length === ETH_ADDRESS_LENGTH)
   }
 
   /**
