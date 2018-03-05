@@ -4,7 +4,7 @@
   "description": "NodeJS utils for handling markets' operations like creation and resolution.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/"
+    "test": "mocha --require babel-register tests/*"
   },
   "repository": {
     "type": "git",
@@ -21,8 +21,17 @@
   },
   "homepage": "https://github.com/gnosis/gnosis-sdk-utils#readme",
   "devDependencies": {
+    "ajv": "^6.2.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
     "eslint": "^4.18.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.9.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "expect.js": "^0.3.1",
     "mocha": "^5.0.1"
   }
 }

@@ -1,0 +1,9 @@
+{
+  "mnemonic": "Lorem ipsum dolor sit amet",
+  "account": "",
+  "ethereumNodeUrl": "http://localhost:8545",
+  "gnosisDBUrl": "",
+  "ipfsUrl": "",
+  "gasPrice": "",
+  "collateralToken": "0x123456789a123456789a123456789a123456789"
+}
