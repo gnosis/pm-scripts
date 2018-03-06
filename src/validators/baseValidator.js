@@ -18,7 +18,7 @@ class BaseValidator {
     return (this.required(value) && regexResult !== null && regexResult.length > 0)
   }
 
-  httpObject(httpObj) {
+  httpObject (httpObj) {
     return (this.required(httpObj.protocol) && this.required(httpObj.host) && this.required(httpObj.port))
   }
 }

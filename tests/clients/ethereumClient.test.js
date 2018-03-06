@@ -8,7 +8,7 @@ const numAccounts = 1
 let cliRPC
 
 describe('Ethereum Client', function () {
-  this.timeout(3000)
+  this.timeout(10000)
 
   before(done => {
     console.log('Starting ganache-cli...')
@@ -25,20 +25,18 @@ describe('Ethereum Client', function () {
       console.log(`Ganache-cli child process exited with code ${code}`)
     })
     // wait for rpc client to get up and running
-    setTimeout(done, 1500)
+    setTimeout(done, 3500)
   })
 
   after(() => {
     cliRPC.kill()
   })
 
-  it('Client is setted up', function (done) {
+  it('Client is setted up', async function () {
     const ethClient = new Client(testMnemonic, providerUrl, numAccounts)
-    const web3 = ethClient.getWeb3()
-    expect(web3).to.not.be(null)
-    web3.eth.getAccounts().then(result => {
-      expect(result.length).to.be(numAccounts)
-      done()
-    })
+    const accounts = await ethClient.getAccounts()
+    expect(accounts.length).to.be(numAccounts)
+    const balance = await ethClient.getBalance(accounts[0])
+    expect(balance).to.be('100000000000000000000')
   })
 })
