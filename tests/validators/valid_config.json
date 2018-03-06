@@ -1,6 +1,6 @@
 {
-  "mnemonic": "Lorem ipsum dolor sit amet",
-  "account": "0x123456789a123456789a123456789a1234567890",
+  "mnemonic": "gnosis test rpc account ethereum blockchain loan fruit valid theme emerge invite",
+  "account": "",
   "blockchain": {
     "protocol": "http",
     "host": "localhost",
