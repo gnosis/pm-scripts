@@ -26,7 +26,7 @@ describe('Config Validator', function () {
   //   expect(validator.hasWritePermissions).withArgs(__dirname).not.to.throwException()
   //   expect(validator.hasWritePermissions).withArgs('/root').to.throwException()
   // })
-  it('Validate URL Regex', function () {
+  it('Validate URL Regex', () => {
     const testRegex = value => {
       const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
       const regexResult = value.match(webUrlRegex)
@@ -52,5 +52,20 @@ describe('Config Validator', function () {
     expect(testRegex(url7)).to.be(false)
     expect(testRegex(url8)).to.be(true)
     expect(testRegex(url9)).to.be(true)
+  })
+  it('Configuration normalization works', async () => {
+    const validator = new ConfigValidator('tests/validators/valid_config.json')
+    validator.load()
+    const config = validator.getConfig()
+    const normConfig = await validator.normalize()
+    expect(normConfig.blockchainUrl).not.to.be(undefined)
+    expect(normConfig.collateralToken).to.be(config.collateralToken.toLowerCase())
+    expect(normConfig.gnosisJS).to.be.an('object')
+    expect(normConfig.blockchain).to.be.an('object')
+    expect(normConfig.blockchainProvider).to.be.an('object')
+    expect(normConfig.gnosisDB).to.be.an('object')
+    expect(normConfig.gnosisDBUrl).not.to.be(undefined)
+    expect(normConfig.ipfs).to.be.an('object')
+    expect(normConfig.ipfsUrl).not.to.be(undefined)
   })
 })

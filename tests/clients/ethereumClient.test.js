@@ -11,6 +11,6 @@ describe('Ethereum Client', function () {
     const accounts = await ethClient.getAccounts()
     expect(accounts.length).to.be(numAccounts)
     const balance = await ethClient.getBalance(accounts[0])
-    expect(balance).to.be('100000000000000000000') // 100000000000000000000
+    expect(balance).to.be('100000000000000000000')
   })
 })
