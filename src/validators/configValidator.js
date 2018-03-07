@@ -1,6 +1,7 @@
 import BaseValidator from './baseValidator'
-import ValidationError from './exceptions'
+import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
+import { hasWriteDirectoryPerms } from '../utils/os'
 import fs from 'fs'
 
 class ConfigValidator extends BaseValidator {
@@ -24,6 +25,13 @@ class ConfigValidator extends BaseValidator {
         'name': 'account',
         'setters': ['declaredOrDefaultAccount'],
         'validators': ['hasBalance']
+      }
+    ]
+
+    this._systemCheks = [
+      {
+        'name': 'hasWritePermissions',
+        'args': [__dirname]
       }
     ]
   }
@@ -53,6 +61,7 @@ class ConfigValidator extends BaseValidator {
 
   /**
   * Run validators
+  * @param field, see _fields property
   * @throws ValidationError
   */
   runValidators (field) {
@@ -65,18 +74,44 @@ class ConfigValidator extends BaseValidator {
   }
 
   /**
+  * Executes system checks, raise error if something went wrong.
+  * @param systemChecks, see _systemCheks property
+  * @throws SystemCheckError
+  */
+  runSystemChecks (systemChecks) {
+    for (let x = 0; x < systemChecks.length; x++) {
+      let check = systemChecks[x]
+      try {
+        if (check.args && check.args.length > 0) {
+          this[check.name](...check.args)
+        } else {
+          this[check.name]()
+        }
+      } catch (error) {
+        throw error
+      }
+    }
+  }
+
+  /**
   * @return True if the configuration if valid, throws an error otherwise
   * @throws Error
   */
   isValid () {
     // Load configuration
     this.load()
-    // Verify if has read/write permissions
+    // Execute system checks, can raise errors, in that case stop the execution
+    try {
+      this.runSystemChecks(this._systemCheks)
+    } catch (error) {
+      // Exit on failure
+      console.warn('System checks went wrong, aborting.', error)
+      process.exit(1)
+    }
 
     // Do validation
     for (let x = 0; x < this._fields.length; x++) {
       const field = this._fields[x]
-
       // TODO: review
       // if (!(field.name in this._config)) {
       //   throw new ValidationError(`JSON Configuration field ${field.name} is required. Got: ${this._config[field.name]}`)
@@ -127,6 +162,16 @@ class ConfigValidator extends BaseValidator {
       return (balance > 0)
     } else {
       return false
+    }
+  }
+
+  /**
+  * System checks
+  */
+  hasWritePermissions (directory) {
+    const hasPerms = hasWriteDirectoryPerms(directory)
+    if (!hasPerms) {
+      throw new SystemCheckError(`You don't have enough permissions to write on ${directory}`)
     }
   }
 }
