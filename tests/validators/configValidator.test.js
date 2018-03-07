@@ -19,6 +19,12 @@ describe('Config Validator', function () {
     const validator = new ConfigValidator('tests/validators/valid_config.json')
     expect(validator.isValid()).to.be(true)
   })
+  // Breaks MochaJS testcase due to process.exit
+  // it('OS permissions', function () {
+  //   const validator = new ConfigValidator('tests/validators/valid_config.json')
+  //   expect(validator.hasWritePermissions).withArgs(__dirname).not.to.throwException()
+  //   expect(validator.hasWritePermissions).withArgs('/root').to.throwException()
+  // })
   it('Validate URL Regex', function () {
     const testRegex = value => {
       const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
