@@ -13,6 +13,10 @@ class Client {
     return this._web3
   }
 
+  getProvider () {
+    return this._provider
+  }
+
   async getAccounts () {
     return promisify(this._web3.eth.getAccounts)()
   }

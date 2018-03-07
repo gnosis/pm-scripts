@@ -21,6 +21,23 @@ class BaseValidator {
   httpObject (httpObj) {
     return (this.required(httpObj.protocol) && this.required(httpObj.host) && this.required(httpObj.port))
   }
+
+  objectPropertiesRequired (obj, properties = []) {
+    let isValid = true
+    if (obj !== null && obj !== undefined) {
+      if (properties.length > 0) {
+        for (let x in properties) {
+          if (obj[properties[x]] === undefined || obj[properties[x]] === '') {
+            isValid = false
+            break
+          }
+        }
+      }
+    } else {
+      isValid = false
+    }
+    return isValid
+  }
 }
 
 module.exports = BaseValidator

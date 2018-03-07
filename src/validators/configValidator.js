@@ -2,6 +2,7 @@ import BaseValidator from './baseValidator'
 import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
 import { hasWriteDirectoryPerms } from '../utils/os'
+import Gnosis from '@gnosis.pm/gnosisjs'
 import fs from 'fs'
 
 class ConfigValidator extends BaseValidator {
@@ -34,6 +35,19 @@ class ConfigValidator extends BaseValidator {
         'args': [__dirname]
       }
     ]
+
+    this._defaults = {
+      'gnosisDB': {
+        'protocol': 'https',
+        'host': 'gnosisdb.staging.gnosisdev.com',
+        'port': 443
+      },
+      'ipfs': {
+        'protocol': 'https',
+        'host': 'ipfs.infura.io',
+        'port': 443
+      }
+    }
   }
 
   /**
@@ -47,6 +61,10 @@ class ConfigValidator extends BaseValidator {
     this._config = JSON.parse(config)
   }
 
+  /**
+  * Getters / Setters
+  */
+
   getConfig () {
     return this._config
   }
@@ -55,8 +73,34 @@ class ConfigValidator extends BaseValidator {
     this._config = config
   }
 
+  getClient (providerUrl) {
+    if (!providerUrl) {
+      providerUrl = this.getProviderUrl()
+    }
+    const client = new Client(this._config.mnemonic, providerUrl, 1)
+    return client
+  }
+
   getProviderUrl () {
     return `${this._config.blockchain.protocol}://${this._config.blockchain.host}:${this._config.blockchain.port}`
+  }
+
+  getGnosisDBUrl () {
+    if (!this.objectPropertiesRequired(this._config.gnosisDB, ['protocol', 'host', 'port'])) {
+      // use default
+      return `${this._defaults.gnosisDB.protocol}://${this._defaults.gnosisDB.host}:${this._defaults.gnosisDB.port}`
+    } else {
+      return `${this._config.gnosisDB.protocol}://${this._config.gnosisDB.host}:${this._config.gnosisDB.port}`
+    }
+  }
+
+  getIPFSUrl () {
+    if (!this.objectPropertiesRequired(this._config.ipfs, ['protocol', 'host', 'port'])) {
+      // use default
+      return `${this._defaults.ipfs.protocol}://${this._defaults.ipfs.host}:${this._defaults.ipfs.port}`
+    } else {
+      return `${this._config.ipfs.protocol}://${this._config.ipfs.host}:${this._config.ipfs.port}`
+    }
   }
 
   /**
@@ -94,6 +138,37 @@ class ConfigValidator extends BaseValidator {
   }
 
   /**
+  * Normalizes the configuration.
+  * Converts addresses to lowercase
+  * Set blockchainUrl, blockchainProvider, gnosisDBUrl, ipfsUrl
+  * Set GnosisJS instance
+  * Keep blockchain, gnosisdb and ipfs objects
+  * @return normalized configuration
+  */
+  async normalize () {
+    const client = this.getClient()
+    const newConfig = Object.assign({}, this._config)
+    newConfig.account = newConfig.account.toLowerCase()
+    newConfig.blockchainProvider = client
+    newConfig.blockchainUrl = this.getProviderUrl()
+    newConfig.gnosisDBUrl = this.getGnosisDBUrl()
+    newConfig.ipfsUrl = this.getIPFSUrl()
+    newConfig.collateralToken = newConfig.collateralToken.toLowerCase()
+    // GnosisJS instance options
+    const gnosisOptions = {
+      ethereum: client.getProvider(),
+      ipfs: newConfig.ipfs,
+      gnosisdb: newConfig.gnosisDBUrl
+    }
+    // Create GnosisJS instance
+    const gnosisjsInstance = await Gnosis.create(gnosisOptions)
+    newConfig.gnosisJS = gnosisjsInstance
+    // Set new updated config
+    this.setConfig(newConfig)
+    return this._config
+  }
+
+  /**
   * @return True if the configuration if valid, throws an error otherwise
   * @throws Error
   */
@@ -117,7 +192,7 @@ class ConfigValidator extends BaseValidator {
       //   throw new ValidationError(`JSON Configuration field ${field.name} is required. Got: ${this._config[field.name]}`)
       // }
 
-      // If setters is defined, let's iterate over it first
+      // If 'setters' property is defined, let's iterate over it first
       if (field.setters) {
         for (let y = 0; y < field.setters.length; y++) {
           let setter = field.setters[y]
@@ -129,8 +204,6 @@ class ConfigValidator extends BaseValidator {
       }
     }
 
-    // Normalize configuration (eth address lowercase, inject wallet instance etc.)
-
     return true
   }
 
@@ -140,8 +213,7 @@ class ConfigValidator extends BaseValidator {
   async declaredOrDefaultAccount (account) {
     if (!this.requiredEthAddress(account)) {
       // Get default account
-      const providerUrl = this.getProviderUrl()
-      const client = new Client(this._config.mnemonic, providerUrl, 1)
+      const client = this.getClient()
       const accounts = await client.getAccounts()
       this._config.account = accounts[0]
     } else {
