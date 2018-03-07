@@ -2,6 +2,7 @@ import ConfigValidator from '../../src/validators/configValidator'
 import expect from 'expect.js'
 
 describe('Config Validator', function () {
+  this.timeout(10000)
   it('Should raise file not found', function () {
     expect(new ConfigValidator('not_existing_config.json').load).to.throwException()
   })
