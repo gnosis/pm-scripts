@@ -3,19 +3,19 @@ import expect from 'expect.js'
 
 const baseValidator = new BaseValidator()
 
-describe('Config Validator', function () {
+describe('Config Validator', () => {
   it('Test required', function () {
     expect(baseValidator.required(null)).to.be(false)
     expect(baseValidator.required(undefined)).to.be(false)
     expect(baseValidator.required('')).to.be(false)
     expect(baseValidator.required('something')).to.be(true)
   })
-  it('Test required eth address', function () {
+  it('Test required eth address', () => {
     expect(baseValidator.requiredEthAddress(undefined)).to.be(false)
     expect(baseValidator.requiredEthAddress('0x123456789b123456789')).to.be(false)
     expect(baseValidator.requiredEthAddress('0x123456789b123456789b123456789b1234567890')).to.be(true)
   })
-  it('Test object validation', function () {
+  it('Test object validation', () => {
     const requiredParams = ['protocol', 'host', 'port']
     const httpInvalidObject = {
       'protocol': '',

@@ -4,6 +4,37 @@ class BaseValidator {
   /**
   * Validators
   */
+
+  isString (value) {
+    return (typeof value === 'string')
+  }
+
+  numberRequired (value) {
+    try {
+      return (value !== undefined && value !== null && parseFloat(value))
+    } catch (err) {
+      return false
+    }
+  }
+
+  futureDate (value) {
+    let date
+    if (!(value instanceof Date)) {
+      date = new Date(value)
+    } else {
+      date = value
+    }
+
+    const futureDate = new Date()
+    futureDate.setDate(futureDate.getDate() + 1)
+    futureDate.setHours(0, 0, 0, 0)
+    return (date >= futureDate)
+  }
+
+  arrayRequired (value, minlength) {
+    return (value !== undefined && value !== null && value.length >= minlength)
+  }
+
   required (value) {
     return (value !== null && value !== undefined && value.trim().length > 0)
   }
