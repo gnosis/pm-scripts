@@ -2,8 +2,10 @@
   "name": "gnosis-sdk-utils",
   "version": "0.0.1",
   "description": "NodeJS utils for handling markets' operations like creation and resolution.",
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
+    "start": "npm run build && node lib/main.js",
+    "build": "./node_modules/.bin/babel src -d lib",
     "test": "sh testRunner.sh"
   },
   "repository": {
@@ -22,6 +24,7 @@
   "homepage": "https://github.com/gnosis/gnosis-sdk-utils#readme",
   "devDependencies": {
     "ajv": "^6.2.0",
+    "babel-cli": "^6.26.0",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
