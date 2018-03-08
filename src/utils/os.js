@@ -9,6 +9,31 @@ const hasWriteDirectoryPerms = directory => {
   }
 }
 
+const fileExists = filePath => {
+  try {
+    return fs.existsSync(filePath)
+  } catch (error) {
+    return false
+  }
+}
+
+const readFile = filePath => {
+  const data = fs.readFileSync(filePath, 'utf8')
+  return JSON.parse(data)
+}
+
+const writeFile = (filePath, data) => {
+  fs.writeFileSync(filePath, data, 'utf8')
+}
+
+const removeFile = filePath => {
+  fs.unlinkSync(filePath)
+}
+
 module.exports = {
-  hasWriteDirectoryPerms
+  hasWriteDirectoryPerms,
+  fileExists,
+  readFile,
+  writeFile,
+  removeFile
 }
