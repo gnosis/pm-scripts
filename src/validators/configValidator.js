@@ -45,7 +45,7 @@ class ConfigValidator extends BaseValidator {
       'ipfs': {
         'protocol': 'https',
         'host': 'ipfs.infura.io',
-        'port': 443
+        'port': 5001
       }
     }
   }
@@ -94,6 +94,17 @@ class ConfigValidator extends BaseValidator {
     }
   }
 
+  getIpfsObject () {
+    if (!this.objectPropertiesRequired(this._config.ipfs, ['protocol', 'host', 'port'])) {
+      return {
+        'protocol': this._defaults.ipfs.protocol,
+        'host': this._defaults.ipfs.host,
+        'port': this._defaults.ipfs.port
+      }
+    }
+    return this._config.ipfs
+  }
+
   getIPFSUrl () {
     if (!this.objectPropertiesRequired(this._config.ipfs, ['protocol', 'host', 'port'])) {
       // use default
@@ -108,12 +119,18 @@ class ConfigValidator extends BaseValidator {
   * @param field, see _fields property
   * @throws ValidationError
   */
-  runValidators (field) {
-    field.validators.forEach(item => {
-      if (!this[item](this._config[field.name])) {
+  async runValidators (field) {
+    for (let x = 0; x < field.validators.length; x++) {
+      let item = field.validators[x]
+      if (!await this[item](this._config[field.name])) {
         throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
       }
-    })
+    }
+    // field.validators.forEach(item => {
+    //   if (!this[item](this._config[field.name])) {
+    //     throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
+    //   }
+    // })
     return true
   }
 
@@ -152,6 +169,7 @@ class ConfigValidator extends BaseValidator {
     newConfig.blockchainProvider = client
     newConfig.blockchainUrl = this.getProviderUrl()
     newConfig.gnosisDBUrl = this.getGnosisDBUrl()
+    newConfig.ipfs = this.getIpfsObject()
     newConfig.ipfsUrl = this.getIPFSUrl()
     newConfig.collateralToken = newConfig.collateralToken.toLowerCase()
     // GnosisJS instance options
@@ -165,14 +183,13 @@ class ConfigValidator extends BaseValidator {
     newConfig.gnosisJS = gnosisjsInstance
     // Set new updated config
     this.setConfig(newConfig)
-    return this._config
   }
 
   /**
   * @return True if the configuration if valid, throws an error otherwise
   * @throws Error
   */
-  isValid () {
+  async isValid () {
     // Load configuration
     this.load()
     // Execute system checks, can raise errors, in that case stop the execution
@@ -196,11 +213,11 @@ class ConfigValidator extends BaseValidator {
       if (field.setters) {
         for (let y = 0; y < field.setters.length; y++) {
           let setter = field.setters[y]
-          this[setter](this._config[field.name])
+          await this[setter](this._config[field.name])
         }
-        this.runValidators(field)
+        await this.runValidators(field)
       } else {
-        this.runValidators(field)
+        await this.runValidators(field)
       }
     }
 

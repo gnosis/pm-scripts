@@ -1,24 +1,30 @@
 import ConfigValidator from '../../src/validators/configValidator'
-import expect from 'expect.js'
+import { configDir, getExpectJS } from '../helpers/generics'
+// Wrapped Expect.js with async throwsAsync testing function
+const expect = getExpectJS()
 
 describe('Config Validator', function () {
   this.timeout(10000)
   it('Should raise file not found', () => {
-    expect(new ConfigValidator('not_existing_config.json').load).to.throwException()
+    expect(new ConfigValidator(configDir + 'not_existing_config.json').load).to.throwException()
   })
-  it('Configuration is not valid', () => {
-    const validator = new ConfigValidator('tests/validators/invalid_config.json')
+  it('Configuration is not valid', async () => {
+    const validator = new ConfigValidator(configDir + 'invalid_config.json')
     validator.load()
     expect(validator.getConfig()).not.to.be(null)
-    expect(validator.isValid).to.throwException()
+    await expect.throwsAsync(
+      validator.isValid
+    )
   })
-  it('Configuration collateral token is not valid', () => {
-    const validator = new ConfigValidator('tests/validators/invalid_collateral_token_config.json')
-    expect(validator.isValid).to.throwException()
+  it('Configuration collateral token is not valid', async () => {
+    const validator = new ConfigValidator(configDir + 'invalid_collateral_token_config.json')
+    await expect.throwsAsync(
+      validator.isValid
+    )
   })
-  it('Configuration is valid', () => {
-    const validator = new ConfigValidator('tests/validators/valid_config.json')
-    expect(validator.isValid()).to.be(true)
+  it('Configuration is valid', async () => {
+    const validator = new ConfigValidator(configDir + 'valid_config.json')
+    expect(await validator.isValid()).to.be(true)
   })
   // Breaks MochaJS testcase due to process.exit
   // it('OS permissions', function () {
@@ -54,10 +60,11 @@ describe('Config Validator', function () {
     expect(testRegex(url9)).to.be(true)
   })
   it('Configuration normalization works', async () => {
-    const validator = new ConfigValidator('tests/validators/valid_config.json')
+    const validator = new ConfigValidator(configDir + 'valid_config.json')
     validator.load()
     const config = validator.getConfig()
-    const normConfig = await validator.normalize()
+    await validator.normalize()
+    const normConfig = validator.getConfig()
     expect(normConfig.blockchainUrl).not.to.be(undefined)
     expect(normConfig.collateralToken).to.be(config.collateralToken.toLowerCase())
     expect(normConfig.gnosisJS).to.be.an('object')
