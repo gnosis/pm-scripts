@@ -1,5 +1,3 @@
-// import Gnosis from '@gnosis.pm/gnosisjs'
-
 class CentralizedOracle {
   constructor (eventDescription, configInstance) {
     this._eventDescription = eventDescription
