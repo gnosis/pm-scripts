@@ -1,32 +1,8 @@
 import MarketValidator from '../../src/validators/marketValidator'
+import { validCategoricalMarket, validScalarMarket, getValidDate } from '../helpers/market'
 import expect from 'expect.js'
 
 describe('Market Validator', () => {
-  const validDate = new Date()
-  validDate.setDate(validDate.getDate() + 1)
-  validDate.setHours(0, 0, 0, 0)
-  const validBaseMarket = {
-    'title': 'Will this market pass validation?',
-    'description': 'A test market',
-    'resolutionDate': validDate.toISOString(),
-    'currency': 'ETH',
-    'fee': '0',
-    'funding': '500e18'
-  }
-
-  const validCategoricalMarket = Object.assign({
-    'outcomeType': 'CATEGORICAL',
-    'outcomes': ['Yes', 'No']
-  }, validBaseMarket)
-
-  const validScalarMarket = Object.assign({
-    'outcomeType': 'SCALAR',
-    'upperBound': '10',
-    'lowerBound': '5',
-    'unit': 'WETH',
-    'decimals': 0
-  }, validBaseMarket)
-
   it('Empty market object', () => {
     expect(new MarketValidator({}).isValid).to.throwException()
   })
@@ -60,6 +36,7 @@ describe('Market Validator', () => {
   })
   it('Market resolution date', () => {
     const market = Object.assign({}, validCategoricalMarket)
+    const validDate = getValidDate()
     market.resolutionDate = new Date().toISOString()
     expect(new MarketValidator(market).isValid).to.throwException()
     market.resolutionDate = null
