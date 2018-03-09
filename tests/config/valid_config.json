@@ -16,6 +16,6 @@
     "host": "",
     "port": ""
   },
-  "gasPrice": "",
+  "gasPrice": "1000000000",
   "collateralToken": "0x123456789b123456789b123456789b1234567890"
 }
