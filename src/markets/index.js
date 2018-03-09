@@ -18,8 +18,23 @@ class Market {
     this._marketAddress = market.address
   }
 
+  formatWinningOutcome () {
+    return this._marketInfo.outcomes ? this._marketInfo.outcomes[this._marketInfo.winningOutcome] : `${this._marketInfo.winningOutcome / (10 ^ this._marketInfo.decimals)} ${this._marketInfo.unit}`
+  }
+  async resolve () {
+    const stage = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
+    if (stage === 1) {
+      await this._configInstance.gnosisJS.contracts.Market.close()
+    }
+    await this._configInstance.gnosisJS.resolveEvent({event: this._marketInfo.event, outcome: this._marketInfo.winningOutcome})
+  }
+
   getAddress () {
     return this._marketAddress
+  }
+
+  async getStage () {
+    return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
   }
 }
 
