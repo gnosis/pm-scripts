@@ -10,6 +10,7 @@ const fileName = 'to_be_deleted.json'
 const filePath = `${configDir}${fileName}`
 
 describe('File Writer', function () {
+  this.timeout(10000)
   it('Write File', () => {
     const data = Object.assign({}, testData)
     expect(fileExists(filePath)).to.be(false)
@@ -43,8 +44,8 @@ describe('File Writer', function () {
     writer.write()
     const fileDataUpdatedCheck = readFile(filePath)
     expect(fileDataUpdatedCheck).to.be.an('object')
-    expect(fileDataUpdatedCheck.address).to.be(data.ddress)
-    expect(fileDataUpdatedCheck.city).to.be(undefined)
+    expect(fileDataUpdatedCheck.address).to.be('else')
+    expect(fileDataUpdatedCheck.city).to.be('New York')
     writer.remove()
     expect(fileExists(filePath)).to.be(false)
   })

@@ -27,6 +27,8 @@ class FileWriter {
     if (this._include) {
       // include data
       data = Object.assign(data, this._data)
+    } else {
+      data = this._data
     }
     // write
     writeFile(this._filePath, JSON.stringify(data))

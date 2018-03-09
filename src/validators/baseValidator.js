@@ -1,4 +1,4 @@
-import { ETH_ADDRESS_LENGTH } from '../constants'
+import { ETH_ADDRESS_LENGTH } from '../utils/constants'
 
 class BaseValidator {
   /**
