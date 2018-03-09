@@ -13,8 +13,7 @@ class ScalarEvent {
   }
 
   async create () {
-    const gasPrice = { gasPrice: this._eventInfo.gasPrice }
-    const event = await this._configInstance.gnosisJS.createScalarEvent(this._eventInfo, { gasPrice })
+    const event = await this._configInstance.gnosisJS.createScalarEvent(this._eventInfo)
     this._eventAddress = event.address
   }
 

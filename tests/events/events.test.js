@@ -8,6 +8,7 @@ import expect from 'expect.js'
 
 describe('Events', function () {
   this.timeout(10000)
+
   it('Categorical Event', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
     await validator.isValid()

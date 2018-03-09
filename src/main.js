@@ -34,8 +34,13 @@ const fundMarket = () => {
   // TODO
 }
 
+const checkMarketFileAlreadyExists = marketFilePath => {
+  //
+}
+
 const runProcessStack = (configPath, marketReadPath, marketWritePath) => {
   // TODO fund + tests
+  // TODO recovery process, start executing from a specific point
   let configInstance, oracle, event, market, fund
   // Instantiate file writer
   const fileWriter = new FileWriter(marketWritePath)
@@ -60,23 +65,30 @@ const runProcessStack = (configPath, marketReadPath, marketWritePath) => {
     console.warn(error)
     process.exit(1)
   }
+
+  // TODO check if the marketWritePath already exists
+  // and ask the user whether use it or override it
+
   // Create oracle
   oracle = createOracle(marketDescription, configInstance)
   marketDescription.oracleAddress = oracle.getAddress()
   fileWriter.setData({
     'CentralizedOracle': marketDescription.oracleAddress
   })
+  fileWriter.write()
   // Create event
   event = createEvent(marketDescription, configInstance)
   marketDescription.eventAddress = event.getAddress()
   fileWriter.setData({
     'Event': marketDescription.eventAddress
   })
+  fileWriter.write()
   // Create market
   market = createMarket(marketDescription, configInstance)
   fileWriter.setData({
     'Market': market.getAddress()
   })
+  fileWriter.write()
   // Fund market
   fund = fundMarket()
 }

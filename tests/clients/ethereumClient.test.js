@@ -2,7 +2,7 @@ import Client from '../../src/clients/ethereum'
 import expect from 'expect.js'
 
 const testMnemonic = process.env.MNEMONIC
-const providerUrl = 'http://localhost:8545'
+const providerUrl = process.env.PROVIDER_URL
 const numAccounts = 1
 
 describe('Ethereum Client', function () {

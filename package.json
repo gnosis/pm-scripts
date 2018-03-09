@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm run build && node lib/main.js",
     "build": "./node_modules/.bin/babel src -d lib",
-    "test": "sh testRunner.sh"
+    "test": "PROVIDER_URL='http://localhost:8545' sh testRunner.sh"
   },
   "repository": {
     "type": "git",
