@@ -32,7 +32,7 @@ class ConfigValidator extends BaseValidator {
     this._systemCheks = [
       {
         'name': 'hasWritePermissions',
-        'args': [__dirname]
+        'args': [this._configPath]
       }
     ]
 

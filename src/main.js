@@ -1,5 +1,6 @@
 import { readFile, fileExists } from './utils/os'
 import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH } from './utils/constants'
+import { logSuccess, logWarn, logError } from './utils/log'
 import FileWriter from './utils/fileWriter'
 import ConfigValidator from './validators/configValidator'
 import MarketValidator from './validators/marketValidator'
@@ -57,19 +58,19 @@ const fundMarket = () => {
   // TODO
 }
 
-const runProcessStack = async (configPath, marketDescription, step) => {
+const runProcessStack = async (configInstance, marketDescription, step) => {
   // TODO fund + tests
-  let configInstance
-  // Validate user file configuration
-  const configValidator = new ConfigValidator(configPath)
-  try {
-    await configValidator.isValid()
-    await configValidator.normalize()
-    configInstance = configValidator.getConfig()
-  } catch (error) {
-    console.warn(error)
-    process.exit(1)
-  }
+  // let configInstance
+  // // Validate user file configuration
+  // const configValidator = new ConfigValidator(configPath)
+  // try {
+  //   await configValidator.isValid()
+  //   await configValidator.normalize()
+  //   configInstance = configValidator.getConfig()
+  // } catch (error) {
+  //   console.warn(error)
+  //   process.exit(1)
+  // }
 
   // Validate market description
   const marketValidator = new MarketValidator(marketDescription)
@@ -93,7 +94,6 @@ const runProcessStack = async (configPath, marketDescription, step) => {
     //
     try {
       marketDescription = await steps[step][x](marketDescription, configInstance)
-      return marketDescription
     } catch (error) {
       console.error(`Got an execption on step ${step}`)
       console.error(error.message)
@@ -102,79 +102,121 @@ const runProcessStack = async (configPath, marketDescription, step) => {
   }
 
   // Fund market
-  fundMarket()
+  marketDescription = fundMarket(marketDescription)
+
+  return marketDescription
 }
 
 /**
 *  Input params:
 * -c : configuration file path, default /conf/config.json
 * -m : market description file path, default /conf/market.json
+* -w : wrap amount of tokens into ether token
 */
 const main = async () => {
-  let configPath, marketPath, marketFile, step
+  let configPath, marketPath, marketFile, step, amountOfTokens
+  let configInstance, configValidator, tokenIstance
   configPath = DEFAULT_CONFIG_FILE_PATH
   marketPath = DEFAULT_MARKET_FILE_PATH
+
   // Instantiate file writer
   const fileWriter = new FileWriter(marketPath, [], false)
 
+  // Arguments check
   if (process.argv.length === 2) {
     console.info('Running SDK Utils with default parameters')
   } else {
     const args = minimist(process.argv)
+    // Configuration file param check
     if (args.f && typeof args.f === 'string') {
       console.info('Using configuration file: ', args.f)
       configPath = args.f
     } else {
-      console.info(`Invalid -f parameter, using default configuration file ${DEFAULT_CONFIG_FILE_PATH}`)
+      logWarn(`Invalid -f parameter, using default configuration file ${DEFAULT_CONFIG_FILE_PATH}`)
     }
+    // Market file param check
     if (args.m && typeof args.m === 'string') {
       console.info('Using market file: ', args.m)
       marketPath = args.m
     } else {
-      console.info(`Invalid -m parameter, using default market file ${DEFAULT_MARKET_FILE_PATH}`)
+      logWarn(`Invalid -m parameter, using default market file ${DEFAULT_MARKET_FILE_PATH}`)
+    }
+    // Wrap Tokens param check
+    if (args.w && typeof args.w === 'number') {
+      console.info(`Asked to wrap ${args.w} tokens`)
+      amountOfTokens = args.w
+    } else {
+      logWarn('Invalid -w parameter')
     }
   }
 
-  if (!fileExists(configPath)) {
-    console.warn(`Config file file doesn't exist on path: ${marketPath}`)
-    process.exit(1)
-  }
   // If the provided (or default) market file doesn't exist,
   // raise an error and abort
   if (fileExists(marketPath)) {
     // read market file JSON content
     marketFile = readFile(marketPath)
   } else {
-    console.warn(`Market file doesn't exist on path: ${marketPath}`)
+    logWarn(`Market file doesn't exist on path: ${marketPath}`)
     process.exit(1)
   }
+
+  // Validate user file configuration
+  configValidator = new ConfigValidator(configPath)
+  try {
+    await configValidator.isValid()
+    await configValidator.normalize()
+    configInstance = configValidator.getConfig()
+  } catch (error) {
+    logError(error)
+    process.exit(1)
+  }
+
   // Get current market step from market file
   let marketFileCopy = marketFile.slice()
   let abort = false
 
   console.info('Starting deploy...')
+
+  if (amountOfTokens && amountOfTokens > 0) {
+    // wrap tokens
+    try {
+      console.info(`Wrapping ${amountOfTokens} tokens...`)
+      tokenIstance = new Token(configInstance)
+      await tokenIstance.wrapTokens(amountOfTokens)
+      console.info('Tokens wrapped successfully')
+    } catch (error) {
+      logError(error)
+      process.exit(1)
+    }
+  }
+
   try {
     for (let x in marketFileCopy) {
       let currentMarket = marketFileCopy[x]
       step = getMarketStep(currentMarket)
       console.log('## Step: ', step)
-      let updatedMarket = await runProcessStack(configPath, currentMarket, step)
+      let updatedMarket = await runProcessStack(configInstance, currentMarket, step)
       marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
     }
     console.info(`Deploy done, writing updates to ${marketPath}`)
   } catch (error) {
-    console.error('Writing updates before aborting...')
+    // Error logged to console on raising function
+    logWarn('Writing updates before aborting...')
     abort = true
   } finally {
     fileWriter.setFilePath(marketPath)
     fileWriter.setData(marketFileCopy)
     fileWriter.write()
     if (abort) {
+      logWarn('Updates written successfully, aborting')
       process.exit(1)
     } else {
-      console.info(`Updates written successfully`)
+      logSuccess('Updates written successfully')
     }
   }
 }
 
+/**
+* Entry point
+*/
 main()
