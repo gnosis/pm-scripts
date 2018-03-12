@@ -1,6 +1,6 @@
 import { readFile, fileExists } from './utils/os'
 import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH } from './utils/constants'
-import { logSuccess, logWarn, logError } from './utils/log'
+import { logInfo, logSuccess, logWarn, logError } from './utils/log'
 import FileWriter from './utils/fileWriter'
 import ConfigValidator from './validators/configValidator'
 import MarketValidator from './validators/marketValidator'
@@ -10,11 +10,18 @@ import ScalarEvent from './events/scalarEvent'
 import Market from './markets'
 import Token from './tokens'
 import minimist from 'minimist'
+import readlineSync from 'readline-sync'
 
 const printBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
   const balance = await etherToken.balanceOf(configInstance.account)
   logSuccess(`Your collateral token balance is ${balance}`)
+}
+
+const askConfirmation = () => {
+  if (!readlineSync.keyInYN('Do you wish to continue?')) {
+    process.exit(0)
+  }
 }
 
 const getMarketStep = marketDescription => {
@@ -73,7 +80,7 @@ const runProcessStack = async (configInstance, marketDescription, step) => {
   try {
     marketValidator.isValid()
   } catch (error) {
-    console.warn(error)
+    logWarn(error)
     process.exit(1)
   }
 
@@ -91,16 +98,16 @@ const runProcessStack = async (configInstance, marketDescription, step) => {
     try {
       marketDescription = await steps[step][x](marketDescription, configInstance)
     } catch (error) {
-      console.error(`Got an execption on step ${step}`)
-      console.error(error.message)
+      logError(`Got an execption on step ${step}`)
+      logError(error.message)
       throw error
     }
   }
 
   // Fund market
-  console.info(`Funding market ${marketDescription.marketAddress}...`)
+  logInfo(`Funding market ${marketDescription.marketAddress}...`)
   marketDescription = await fundMarket(marketDescription, configInstance)
-  console.info('Market funded successfully')
+  logInfo('Market funded successfully')
 
   return marketDescription
 }
@@ -127,21 +134,21 @@ const main = async () => {
     const args = minimist(process.argv)
     // Configuration file param check
     if (args.f && typeof args.f === 'string') {
-      console.info('Using configuration file: ', args.f)
+      logInfo(`Using configuration file: ${args.f}`)
       configPath = args.f
     } else {
       logWarn(`Invalid -f parameter, using default configuration file ${DEFAULT_CONFIG_FILE_PATH}`)
     }
     // Market file param check
     if (args.m && typeof args.m === 'string') {
-      console.info('Using market file: ', args.m)
+      logInfo(`Using market file: ${args.m}`)
       marketPath = args.m
     } else {
       logWarn(`Invalid -m parameter, using default market file ${DEFAULT_MARKET_FILE_PATH}`)
     }
     // Wrap Tokens param check
     if (args.w && typeof args.w === 'number') {
-      console.info(`Asked to wrap ${args.w} tokens`)
+      logInfo(`Asked to wrap ${args.w} tokens`)
       amountOfTokens = args.w
     } else if (args.w) {
       logWarn('Invalid -w parameter, skipping tokens wrapping step')
@@ -171,20 +178,24 @@ const main = async () => {
 
   // Display user tokens balance
   await printBalance(configInstance)
+  logSuccess('Your market file content:')
+  logInfo(JSON.stringify(marketFile, undefined, 4))
+  // Ask user to confirm or stop the process
+  askConfirmation()
 
   // Get current market step from market file
   let marketFileCopy = marketFile.slice()
   let abort = false
 
-  console.info('Starting deploy...')
+  logInfo('Starting deploy...')
 
   if (amountOfTokens && amountOfTokens > 0) {
     // wrap tokens
     try {
-      console.info(`Wrapping ${amountOfTokens} tokens...`)
+      logInfo(`Wrapping ${amountOfTokens} tokens...`)
       tokenIstance = new Token(configInstance)
       await tokenIstance.wrapTokens(amountOfTokens)
-      console.info('Tokens wrapped successfully')
+      logInfo('Tokens wrapped successfully')
     } catch (error) {
       logError(error)
       process.exit(1)
@@ -195,11 +206,10 @@ const main = async () => {
     for (let x in marketFileCopy) {
       let currentMarket = marketFileCopy[x]
       step = getMarketStep(currentMarket)
-      console.log('## Step: ', step)
       let updatedMarket = await runProcessStack(configInstance, currentMarket, step)
       marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
     }
-    console.info(`Deploy done, writing updates to ${marketPath}`)
+    logInfo(`Deploy done, writing updates to ${marketPath}`)
   } catch (error) {
     // Error logged to console by function raising the error
     logWarn('Writing updates before aborting...')
@@ -212,7 +222,7 @@ const main = async () => {
       logWarn('Updates written successfully, aborting')
       process.exit(1)
     } else {
-      logSuccess('Updates written successfully')
+      logSuccess(`Updates written successfully to ${marketPath}`)
     }
   }
 }
