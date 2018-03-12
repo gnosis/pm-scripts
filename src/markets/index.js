@@ -18,6 +18,19 @@ class Market {
     this._marketAddress = market.address
   }
 
+  async fund () {
+    const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketInfo.marketAddress)
+    const etherToken = this._configInstance.gnosisJS.contracts.EtherToken.at(this._configInstance.collateralToken)
+    // Approve tokens transferral
+    await etherToken.approve(this._marketInfo.marketAddress, this._marketInfo.funding)
+    // Fund market
+    await market.fund(this._marketInfo.funding)
+  }
+
+  setAddress (address) {
+    this._marketAddress = address
+  }
+
   getAddress () {
     return this._marketAddress
   }
