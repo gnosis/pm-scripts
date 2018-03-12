@@ -19,6 +19,10 @@ const fileExists = filePath => {
 
 const readFile = filePath => {
   const data = fs.readFileSync(filePath, 'utf8')
+  // If file is empty, returns an empty object
+  if (data === undefined || data === null || data.trim() === '') {
+    return {}
+  }
   return JSON.parse(data)
 }
 

@@ -1,7 +1,5 @@
 import BaseValidator from './baseValidator'
 import { ValidationError } from './exceptions'
-import Client from '../clients/ethereum'
-// import Gnosis from '@gnosis.pm/gnosisjs'
 
 class MarketValidator extends BaseValidator {
   constructor (marketObject) {
@@ -39,18 +37,14 @@ class MarketValidator extends BaseValidator {
         errors.push(`${prefix} Funding is must be greater than 0, got ${this._market.funding}`)
       }
     }
-    // TODO check funds on account validation
-    // if (!this.hasFunds(this._market.funding)) {
-    //   errors.push(`${prefix} You don't have enough funds, got ${this._market.funding}`)
-    // }
-    //
+
     if (this._market.outcomeType === 'SCALAR') {
       if (!this.required(this._market.unit)) {
         errors.push(`${prefix} Unit is required, got ${this._market.unit}`)
       }
-      if (this._market.decimals === undefined
-          || this._market.decimals === null
-          || this._market.decimals < 0) {
+      if (this._market.decimals === undefined ||
+        this._market.decimals === null ||
+        this._market.decimals < 0) {
         errors.push(`${prefix} Decimals is required and must be >= 0, got ${this._market.decimals}`)
       }
       if (!this.numberRequired(this._market.upperBound)) {
@@ -87,11 +81,6 @@ class MarketValidator extends BaseValidator {
     } catch (error) {
       return false
     }
-  }
-
-  hasFunds (funds) {
-    // TODO handle on account validation, need Eth Client instance
-    return true
   }
 }
 

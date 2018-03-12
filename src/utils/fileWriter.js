@@ -11,6 +11,10 @@ class FileWriter {
     this._data = data
   }
 
+  setFilePath (filePath) {
+    this._filePath = filePath
+  }
+
   /**
   * Writes JSON data to a file.
   * Can merge current `this._data` with file content if `this._include` is true
@@ -31,7 +35,7 @@ class FileWriter {
       data = this._data
     }
     // write
-    writeFile(this._filePath, JSON.stringify(data))
+    writeFile(this._filePath, JSON.stringify(data, null, 2))
   }
 
   /**
