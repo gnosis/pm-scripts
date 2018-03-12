@@ -11,6 +11,12 @@ import Market from './markets'
 import Token from './tokens'
 import minimist from 'minimist'
 
+const printBalance = async configInstance => {
+  const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
+  const balance = await etherToken.balanceOf(configInstance.account)
+  logSuccess(`Your collateral token balance is ${balance}`)
+}
+
 const getMarketStep = marketDescription => {
   const steps = ['oracleAddress', 'eventAddress', 'marketAddress']
   let step = -1
@@ -54,24 +60,14 @@ const createMarket = async (marketDescription, configInstance) => {
   return marketDescription
 }
 
-const fundMarket = () => {
-  // TODO
+const fundMarket = async (marketDescription, configInstance) => {
+  const market = new Market(marketDescription, configInstance)
+  market.setAddress(marketDescription.marketAddress)
+  await market.fund()
+  return marketDescription
 }
 
 const runProcessStack = async (configInstance, marketDescription, step) => {
-  // TODO fund + tests
-  // let configInstance
-  // // Validate user file configuration
-  // const configValidator = new ConfigValidator(configPath)
-  // try {
-  //   await configValidator.isValid()
-  //   await configValidator.normalize()
-  //   configInstance = configValidator.getConfig()
-  // } catch (error) {
-  //   console.warn(error)
-  //   process.exit(1)
-  // }
-
   // Validate market description
   const marketValidator = new MarketValidator(marketDescription)
   try {
@@ -102,7 +98,9 @@ const runProcessStack = async (configInstance, marketDescription, step) => {
   }
 
   // Fund market
-  marketDescription = fundMarket(marketDescription)
+  console.info(`Funding market ${marketDescription.marketAddress}...`)
+  marketDescription = await fundMarket(marketDescription, configInstance)
+  console.info('Market funded successfully')
 
   return marketDescription
 }
@@ -124,7 +122,7 @@ const main = async () => {
 
   // Arguments check
   if (process.argv.length === 2) {
-    console.info('Running SDK Utils with default parameters')
+    logWarn('Running SDK Utils with default parameters')
   } else {
     const args = minimist(process.argv)
     // Configuration file param check
@@ -145,8 +143,8 @@ const main = async () => {
     if (args.w && typeof args.w === 'number') {
       console.info(`Asked to wrap ${args.w} tokens`)
       amountOfTokens = args.w
-    } else {
-      logWarn('Invalid -w parameter')
+    } else if (args.w) {
+      logWarn('Invalid -w parameter, skipping tokens wrapping step')
     }
   }
 
@@ -170,6 +168,9 @@ const main = async () => {
     logError(error)
     process.exit(1)
   }
+
+  // Display user tokens balance
+  await printBalance(configInstance)
 
   // Get current market step from market file
   let marketFileCopy = marketFile.slice()
@@ -200,7 +201,7 @@ const main = async () => {
     }
     console.info(`Deploy done, writing updates to ${marketPath}`)
   } catch (error) {
-    // Error logged to console on raising function
+    // Error logged to console by function raising the error
     logWarn('Writing updates before aborting...')
     abort = true
   } finally {
