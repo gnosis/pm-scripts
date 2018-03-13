@@ -18,7 +18,7 @@ describe('Markets', function () {
     // Issue wrap tokens
     config.collateralToken = config.gnosisJS.contracts.EtherToken.address
     const token = new Token(config)
-    const wrappedTokens = await token.wrapTokens()
+    const wrappedTokens = await token.wrapTokens(1e18)
     expect(wrappedTokens).to.be.an('object')
     // Create Oracle
     const oracle = new CentralizedOracle(categoricalEventDescription, config)
@@ -34,14 +34,31 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create Market
-    const marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
     const market = new Market(marketInfo, config)
     await market.create()
+    await market.fund()
     const marketAddress = market.getAddress()
     expect(marketAddress).to.be.a('string')
     expect(marketAddress.length).to.be(42)
-  })
+    marketInfo = Object.assign(market.getData(), {winningOutcome: 1})
+    await market.resolve()
+    expect(market.getWinningOutcome()).to.be(1)
 
+    // Verify market is closed
+    const marketInstance = await config.gnosisJS.contracts.Market.at(market.getAddress())
+    const stage = await marketInstance.stage()
+    expect(stage.toNumber()).to.be(2)
+
+    // Try again to resolve, should raise an error
+    let resolveError = null
+    try {
+      await market.resolve()
+    } catch (error) {
+      resolveError = error
+    }
+    expect(resolveError).not.to.be(null)
+  })
   it('Scalar Market', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
     await validator.isValid()
@@ -50,7 +67,7 @@ describe('Markets', function () {
     // Issue wrap tokens
     config.collateralToken = config.gnosisJS.contracts.EtherToken.address
     const token = new Token(config)
-    const wrappedTokens = await token.wrapTokens()
+    const wrappedTokens = await token.wrapTokens(1e18)
     expect(wrappedTokens).to.be.an('object')
     // Create oracle
     const oracle = new CentralizedOracle(scalarEventDescription, config)
@@ -66,11 +83,29 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create market
-    const marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
     const market = new Market(marketInfo, config)
     await market.create()
+    await market.fund()
     const marketAddress = market.getAddress()
     expect(marketAddress).to.be.a('string')
     expect(marketAddress.length).to.be(42)
+    marketInfo = Object.assign(market.getData(), {winningOutcome: 6})
+    await market.resolve()
+    expect(market.getWinningOutcome()).to.be(6)
+
+    // Verify market is closed
+    const marketInstance = await config.gnosisJS.contracts.Market.at(market.getAddress())
+    const stage = await marketInstance.stage()
+    expect(stage.toNumber()).to.be(2)
+
+    // Try again to resolve, should raise an error
+    let resolveError = null
+    try {
+      await market.resolve()
+    } catch (error) {
+      resolveError = error
+    }
+    expect(resolveError).not.to.be(null)
   })
 })

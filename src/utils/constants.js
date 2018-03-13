@@ -4,8 +4,15 @@ const ETH_ADDRESS_LENGTH = 42
 const DEFAULT_CONFIG_FILE_PATH = path.join(__dirname, '../../conf/config.json')
 const DEFAULT_MARKET_FILE_PATH = path.join(__dirname, '../../conf/markets.json')
 
+const MARKET_STAGES = {
+  created: 0,
+  funded: 1,
+  closed: 2
+}
+
 module.exports = {
   ETH_ADDRESS_LENGTH,
   DEFAULT_CONFIG_FILE_PATH,
-  DEFAULT_MARKET_FILE_PATH
+  DEFAULT_MARKET_FILE_PATH,
+  MARKET_STAGES
 }

@@ -126,11 +126,6 @@ class ConfigValidator extends BaseValidator {
         throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
       }
     }
-    // field.validators.forEach(item => {
-    //   if (!this[item](this._config[field.name])) {
-    //     throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
-    //   }
-    // })
     return true
   }
 
@@ -204,11 +199,6 @@ class ConfigValidator extends BaseValidator {
     // Do validation
     for (let x = 0; x < this._fields.length; x++) {
       const field = this._fields[x]
-      // TODO: review
-      // if (!(field.name in this._config)) {
-      //   throw new ValidationError(`JSON Configuration field ${field.name} is required. Got: ${this._config[field.name]}`)
-      // }
-
       // If 'setters' property is defined, let's iterate over it first
       if (field.setters) {
         for (let y = 0; y < field.setters.length; y++) {
