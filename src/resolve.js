@@ -1,24 +1,22 @@
 /**
-* This scripts handles the deployment process of new markets.
-+ Provides also the market with funds.
+* This scripts handles the resolution process of markets.
++ Once a markets gets resolved cannot accept bets anymore.
 */
 import { readFile, fileExists } from './utils/os'
 import { logInfo, logSuccess, logWarn, logError } from './utils/log'
 import FileWriter from './utils/fileWriter'
 import ConfigValidator from './validators/configValidator'
-// import MarketValidator from './validators/marketValidator'
-import Token from './tokens'
 import {
   printTokenBalance, askConfirmation, getMarketStep, createOracle,
-  createEvent, createMarket, fundMarket, processArgs, runProcessStack
+  createEvent, createMarket, fundMarket, resolveMarket, processArgs, runProcessStack
 } from './utils/execution'
 
 const steps = {
-  '-1': [createOracle, createEvent, createMarket, fundMarket],
-  '0': [createEvent, createMarket, fundMarket],
-  '1': [createMarket, fundMarket],
-  '2': [fundMarket],
-  '3': [] // market resolution not handled on this script, see resolve.js
+  '-1': [createOracle, createEvent, createMarket, fundMarket, resolveMarket],
+  '0': [createEvent, createMarket, fundMarket, resolveMarket],
+  '1': [createMarket, fundMarket, resolveMarket],
+  '2': [resolveMarket],
+  '3': [resolveMarket]
 }
 
 /**
@@ -29,7 +27,7 @@ const steps = {
 */
 const main = async () => {
   let marketFile, step
-  let configInstance, configValidator, tokenIstance
+  let configInstance, configValidator
   const args = processArgs(process.argv)
 
   // If the provided (or default) market file doesn't exist,
@@ -66,29 +64,14 @@ const main = async () => {
   logInfo(JSON.stringify(marketFile, undefined, 4))
   // Display user tokens balance
   await printTokenBalance(configInstance)
-  // Ask user to confirm the input JSON description or stop the process
+  // Ask user to confirm or stop the process
   askConfirmation('Do you wish to continue?')
 
   // Get current market step from market file
   let marketFileCopy = marketFile.slice()
   let abort = false
 
-  // Start deploy process
-  logInfo('Starting deploy...')
-
-  if (args.amountOfTokens && args.amountOfTokens > 0) {
-    // wrap tokens
-    try {
-      logInfo(`Wrapping ${args.amountOfTokens} tokens...`)
-      tokenIstance = new Token(configInstance)
-      await tokenIstance.wrapTokens(args.amountOfTokens)
-      logInfo('Tokens wrapped successfully')
-    } catch (error) {
-      logError(error)
-      process.exit(1)
-    }
-  }
-
+  logInfo('Starting markets resolution...')
   try {
     for (let x in marketFileCopy) {
       let currentMarket = marketFileCopy[x]
@@ -96,7 +79,7 @@ const main = async () => {
       let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
       marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
     }
-    logInfo(`Deploy done, writing updates to ${args.marketPath}`)
+    logInfo(`Resolution done, writing updates to ${args.marketPath}`)
   } catch (error) {
     // Error logged to console by function raising the error
     logWarn('Writing updates before aborting...')

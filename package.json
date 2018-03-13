@@ -4,7 +4,8 @@
   "description": "NodeJS utils for handling markets' operations like creation and resolution.",
   "main": "src/main.js",
   "scripts": {
-    "start": "npm run build && node lib/main.js",
+    "start": "npm run build && node lib/deploy.js",
+    "resolve": "npm run build && node lib/resolve.js",
     "build": "./node_modules/.bin/babel src -d lib",
     "test": "PROVIDER_URL='http://localhost:8545' sh testRunner.sh"
   },
