@@ -1,78 +1,19 @@
+/**
+* This scripts handles the deployment process of new markets.
++ Provides also the market with funds.
+*/
 import { readFile, fileExists } from './utils/os'
 import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH } from './utils/constants'
 import { logInfo, logSuccess, logWarn, logError } from './utils/log'
 import FileWriter from './utils/fileWriter'
 import ConfigValidator from './validators/configValidator'
 import MarketValidator from './validators/marketValidator'
-import CentralizedOracle from './oracles/centralizedOracle'
-import CategoricalEvent from './events/categoricalEvent'
-import ScalarEvent from './events/scalarEvent'
-import Market from './markets'
 import Token from './tokens'
 import minimist from 'minimist'
-import readlineSync from 'readline-sync'
-
-const printBalance = async configInstance => {
-  const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
-  const balance = await etherToken.balanceOf(configInstance.account)
-  logSuccess(`Your collateral token balance is ${balance}`)
-}
-
-const askConfirmation = () => {
-  if (!readlineSync.keyInYN('Do you wish to continue?')) {
-    process.exit(0)
-  }
-}
-
-const getMarketStep = marketDescription => {
-  const steps = ['oracleAddress', 'eventAddress', 'marketAddress']
-  let step = -1
-  for (let x in steps) {
-    if (!(steps[x] in marketDescription)) {
-      return step
-    } else if (steps[x] in marketDescription && (
-      marketDescription[steps[x]] === null ||
-      marketDescription[steps[x]] === undefined ||
-      marketDescription[steps[x]].trim() === '')) {
-      return step
-    }
-    step = x
-  }
-  return step
-}
-
-const createOracle = async (eventDescription, configInstance) => {
-  const oracle = new CentralizedOracle(eventDescription, configInstance)
-  await oracle.create()
-  eventDescription.oracleAddress = oracle.getAddress()
-  return eventDescription
-}
-
-const createEvent = async (eventDescription, configInstance) => {
-  let event
-  if (eventDescription.outcomeType === 'SCALAR') {
-    event = new ScalarEvent(eventDescription, configInstance)
-  } else {
-    event = new CategoricalEvent(eventDescription, configInstance)
-  }
-  await event.create()
-  eventDescription.eventAddress = event.getAddress()
-  return eventDescription
-}
-
-const createMarket = async (marketDescription, configInstance) => {
-  const market = new Market(marketDescription, configInstance)
-  await market.create()
-  marketDescription.marketAddress = market.getAddress()
-  return marketDescription
-}
-
-const fundMarket = async (marketDescription, configInstance) => {
-  const market = new Market(marketDescription, configInstance)
-  market.setAddress(marketDescription.marketAddress)
-  await market.fund()
-  return marketDescription
-}
+import {
+  printBalance, askConfirmation, getMarketStep, createOracle,
+  createEvent, createMarket, fundMarket
+} from './utils/execution'
 
 const runProcessStack = async (configInstance, marketDescription, step) => {
   // Validate market description
@@ -85,13 +26,12 @@ const runProcessStack = async (configInstance, marketDescription, step) => {
   }
 
   const steps = {
-    '-1': [createOracle, createEvent, createMarket],
-    '0': [createEvent, createMarket],
-    '1': [createMarket],
-    '2': []
+    '-1': [createOracle, createEvent, createMarket, fundMarket],
+    '0': [createEvent, createMarket, fundMarket],
+    '1': [createMarket, fundMarket],
+    '2': [fundMarket],
+    '3': [] // market resolution non handled on this script
   }
-
-  // TODO verify has enough funds
 
   for (let x in steps[step]) {
     //
@@ -104,10 +44,10 @@ const runProcessStack = async (configInstance, marketDescription, step) => {
     }
   }
 
-  // Fund market
-  logInfo(`Funding market ${marketDescription.marketAddress}...`)
-  marketDescription = await fundMarket(marketDescription, configInstance)
-  logInfo('Market funded successfully')
+  // // Fund market
+  // logInfo(`Funding market ${marketDescription.marketAddress}...`)
+  // marketDescription = await fundMarket(marketDescription, configInstance)
+  // logInfo('Market funded successfully')
 
   return marketDescription
 }
@@ -159,12 +99,17 @@ const main = async () => {
   // raise an error and abort
   if (fileExists(marketPath)) {
     // read market file JSON content
-    marketFile = readFile(marketPath)
+    try {
+      marketFile = readFile(marketPath)
+    } catch (error) {
+      // File format not JSON compatible
+      logError(`File ${marketPath} is not JSON compliant, please modify it.`)
+      process.exit(1)
+    }
   } else {
     logWarn(`Market file doesn't exist on path: ${marketPath}`)
     process.exit(1)
   }
-
   // Validate user file configuration
   configValidator = new ConfigValidator(configPath)
   try {
@@ -180,13 +125,15 @@ const main = async () => {
   await printBalance(configInstance)
   logSuccess('Your market file content:')
   logInfo(JSON.stringify(marketFile, undefined, 4))
-  // Ask user to confirm or stop the process
+
+  // Ask user to confirm the input JSON description or stop the process
   askConfirmation()
 
   // Get current market step from market file
   let marketFileCopy = marketFile.slice()
   let abort = false
 
+  // Start deploy process
   logInfo('Starting deploy...')
 
   if (amountOfTokens && amountOfTokens > 0) {
