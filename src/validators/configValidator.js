@@ -1,6 +1,7 @@
 import BaseValidator from './baseValidator'
 import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
+import { HD_WALLET_ACCOUNTS } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
 import Gnosis from '@gnosis.pm/gnosisjs'
 import fs from 'fs'
@@ -171,8 +172,10 @@ class ConfigValidator extends BaseValidator {
     const gnosisOptions = {
       ethereum: client.getProvider(),
       ipfs: newConfig.ipfs,
-      gnosisdb: newConfig.gnosisDBUrl
+      gnosisdb: newConfig.gnosisDBUrl,
+      defaultAccount: newConfig.account
     }
+
     // Create GnosisJS instance
     const gnosisjsInstance = await Gnosis.create(gnosisOptions)
     newConfig.gnosisJS = gnosisjsInstance
@@ -231,7 +234,7 @@ class ConfigValidator extends BaseValidator {
   async hasBalance (account) {
     let balance
     const providerUrl = this.getProviderUrl()
-    const client = new Client(this._config.mnemonic, providerUrl)
+    const client = new Client(this._config.mnemonic, providerUrl, HD_WALLET_ACCOUNTS)
 
     if (this.requiredEthAddress(account)) {
       balance = await client.getBalance(account)

@@ -1,4 +1,5 @@
 import { MARKET_STAGES } from '../utils/constants'
+import { promisify } from '@gnosis.pm/gnosisjs'
 
 class Market {
   constructor (marketInfo, configInstance) {
@@ -21,12 +22,32 @@ class Market {
   }
 
   async fund () {
+    let txReceipt
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     const etherToken = this._configInstance.gnosisJS.contracts.EtherToken.at(this._configInstance.collateralToken)
     // Approve tokens transferral
     await etherToken.approve(this._marketAddress, this._marketInfo.funding)
     // // Fund market
-    await market.fund(this._marketInfo.funding)
+    const txResponse = await market.fund(this._marketInfo.funding)
+    // First transaction check
+    if (txResponse.receipt && txResponse.receipt.status === '0x0') {
+      throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+    } else if (txResponse.receipt && txResponse.status === '0x1') {
+      return
+    }
+
+    const web3 = this._configInstance.blockchainProvider.getWeb3()
+    while (true) {
+      txReceipt = await promisify(web3.eth.getTransactionReceipt)(txResponse.tx)
+      if (!txReceipt) {
+        continue
+      } else if (txReceipt && txReceipt.status === '0x0') {
+        // handle error, transaction failed
+        throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+      } else if (txReceipt && txReceipt.status === '0x1') {
+        break
+      }
+    }
   }
 
   formatWinningOutcome () {

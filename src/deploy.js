@@ -6,11 +6,10 @@ import { readFile, fileExists } from './utils/os'
 import { logInfo, logSuccess, logWarn, logError } from './utils/log'
 import FileWriter from './utils/fileWriter'
 import ConfigValidator from './validators/configValidator'
-// import MarketValidator from './validators/marketValidator'
 import Token from './tokens'
 import {
-  printTokenBalance, askConfirmation, getMarketStep, createOracle,
-  createEvent, createMarket, fundMarket, processArgs, runProcessStack
+  printTokenBalance, printAccountBalance, askConfirmation, getMarketStep,
+  createOracle, createEvent, createMarket, fundMarket, processArgs, runProcessStack
 } from './utils/execution'
 
 const steps = {
@@ -66,6 +65,7 @@ const main = async () => {
   logInfo(JSON.stringify(marketFile, undefined, 4))
   // Display user tokens balance
   await printTokenBalance(configInstance)
+  await printAccountBalance(configInstance)
   // Ask user to confirm the input JSON description or stop the process
   askConfirmation('Do you wish to continue?')
 
@@ -79,7 +79,7 @@ const main = async () => {
   if (args.amountOfTokens && args.amountOfTokens > 0) {
     // wrap tokens
     try {
-      logInfo(`Wrapping ${args.amountOfTokens} tokens...`)
+      logInfo(`Wrapping ${args.amountOfTokens / 1e18} tokens...`)
       tokenIstance = new Token(configInstance)
       await tokenIstance.wrapTokens(args.amountOfTokens)
       logInfo('Tokens wrapped successfully')

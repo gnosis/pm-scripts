@@ -5,7 +5,7 @@ import { promisify } from '@gnosis.pm/gnosisjs'
 class Client {
   constructor (mnemonic, providerUrl, numAccounts = 1) {
     this._providerUrl = providerUrl
-    this._provider = new HDWalletProvider(mnemonic, providerUrl, numAccounts)
+    this._provider = new HDWalletProvider(mnemonic, providerUrl, 0, numAccounts)
     this._web3 = new Web3(this._provider)
   }
 
