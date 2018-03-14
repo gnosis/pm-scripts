@@ -149,6 +149,12 @@ const processArgs = argv => {
     logWarn('Running SDK Utils with default parameters')
   } else {
     const args = minimist(argv)
+    // Here we have to use argv instead of minimist
+    // which doesn't treat -help as an unique string, splits it into several params
+    if (argv.indexOf('-help') >= 2 || argv.indexOf('-h') >= 2) {
+      consoleHelper()
+      process.exit(0)
+    }
     // Configuration file param check
     if (args.f && typeof args.f === 'string') {
       logInfo(`Using configuration file: ${args.f}`)
@@ -213,6 +219,18 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
   return marketDescription
 }
 
+const consoleHelper = () => {
+  console.info('GNOSIS SDK')
+  console.info('Deploy usage: npm run start -- <commands>')
+  console.info('Other deploy usage: node lib/deploy <commands>')
+  console.info('Resolution usage: npm run resolve -- <commands>')
+  console.info('Other resolution usage: node lib/deploy <commands>')
+  console.info('Commands:')
+  console.info('-f\tabsolute path to your configuration file.')
+  console.info('-m\tabsolute path to your markets file.')
+  console.info('-w\tamount of collateral tokens to wrap')
+}
+
 module.exports = {
   printTokenBalance,
   askConfirmation,
@@ -223,5 +241,6 @@ module.exports = {
   fundMarket,
   resolveMarket,
   runProcessStack,
-  processArgs
+  processArgs,
+  consoleHelper
 }
