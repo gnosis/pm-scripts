@@ -35,7 +35,7 @@ class Market {
     // Approve tokens transferral
     await etherToken.approve(this._marketAddress, this._marketInfo.funding)
     // // Fund market
-    const txResponse = await market.fund(this._marketInfo.funding, { gas: 300000000 })
+    const txResponse = await market.fund(this._marketInfo.funding)
     // First transaction check
     if (txResponse.receipt && txResponse.receipt.status === 0) {
       throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
@@ -64,15 +64,29 @@ class Market {
   }
 
   async resolve () {
-    const market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const stage = await market.stage()
+    let oracle, outcomeSet
+    let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
+    let stage = await market.stage()
     if (stage.toNumber() === MARKET_STAGES.created) {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CREATED)`)
     } else if (stage.toNumber() === MARKET_STAGES.closed) {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CLOSED)`)
     } else {
-      await market.close() // this._configInstance.gnosisJS.contracts.Market.close()
+      // Resolve market
       await this._configInstance.gnosisJS.resolveEvent({event: this._marketInfo.event, outcome: this._marketInfo.winningOutcome})
+      await market.close() // this._configInstance.gnosisJS.contracts.Market.close()
+      // Wait for the transaction to take effect
+      logInfo(`Waiting for market resolution process to complete...`)
+      while (true) {
+        oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._marketInfo.oracleAddress)
+        market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
+        stage = await market.stage()
+        outcomeSet = await oracle.isOutcomeSet()
+        if (stage.toNumber() === MARKET_STAGES.closed && outcomeSet) {
+          break
+        }
+        sleep.msleep(TX_LOOKUP_TIME)
+      }
     }
 
     this._winningOutcome = this._marketInfo.winningOutcome
