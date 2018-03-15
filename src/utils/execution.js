@@ -9,6 +9,7 @@ import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
 import Market from './../markets'
 import MarketValidator from './../validators/marketValidator'
+import Client from './../clients/ethereum'
 import readlineSync from 'readline-sync'
 import minimist from 'minimist'
 
@@ -17,8 +18,18 @@ import minimist from 'minimist'
 */
 const printTokenBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
-  const balance = await etherToken.balanceOf(configInstance.account)
+  const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
   logSuccess(`Your current collateral token balance is ${balance}`)
+}
+
+/**
+* Prints out the current setted ethereum account and balance
+*/
+const printAccountBalance = async configInstance => {
+  const client = new Client(configInstance.mnemonic, configInstance.blockchainUrl)
+  const balance = (await client.getBalance(configInstance.account)) / 1e18
+  logSuccess(`Your Ethereum address is ${configInstance.account}`)
+  logSuccess(`Your account balance is ${balance} ETH`)
 }
 
 /**
@@ -171,7 +182,7 @@ const processArgs = argv => {
     }
     // Wrap Tokens param check
     if (args.w && typeof args.w === 'number') {
-      logInfo(`Asked to wrap ${args.w} tokens`)
+      logInfo(`Asked to wrap ${args.w / 1e18} tokens`)
       amountOfTokens = args.w
     } else if (args.w) {
       logWarn('Invalid -w parameter, skipping tokens wrapping step')
@@ -233,6 +244,7 @@ const consoleHelper = () => {
 
 module.exports = {
   printTokenBalance,
+  printAccountBalance,
   askConfirmation,
   getMarketStep,
   createOracle,

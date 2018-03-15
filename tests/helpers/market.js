@@ -44,11 +44,14 @@ const scalarEventDescription = {
   'decimals': 0
 }
 
+const defaultGas = 300000000
+
 module.exports = {
   getValidDate,
   validBaseMarket,
   validCategoricalMarket,
   validScalarMarket,
   categoricalEventDescription,
-  scalarEventDescription
+  scalarEventDescription,
+  defaultGas
 }
