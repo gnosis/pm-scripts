@@ -19,7 +19,7 @@ import minimist from 'minimist'
 const printTokenBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
-  logSuccess(`Your current collateral token balance is ${balance}`)
+  logSuccess(`Your current collateral token balance is ${balance} WETH`)
 }
 
 /**
@@ -219,6 +219,18 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
       if (steps[step][x].name === 'fundMarket') {
         if (!askConfirmation(`Do you wish to fund the market ${marketDescription.marketAddress}?`, false)) {
           // skip
+          continue
+        }
+      }
+
+      if (steps[step][x].name === 'resolveMarket') {
+        if (marketDescription.winningOutcome) {
+          if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${marketDescription.winningOutcome}?`, false)) {
+            // skip
+            continue
+          }
+        } else {
+          logInfo(`Market ${marketDescription.marketAddress} has no winningOutcome set, skipping it`)
           continue
         }
       }

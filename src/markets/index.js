@@ -1,5 +1,5 @@
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
-import { logInfo } from '../utils/log'
+import { logInfo, logSuccess } from '../utils/log'
 import { promisify } from '@gnosis.pm/gnosisjs'
 import sleep from 'sleep'
 
@@ -93,6 +93,7 @@ class Market {
         }
         sleep.msleep(TX_LOOKUP_TIME)
       }
+      logSuccess(`Market ${this._marketAddress} resolved successfully`)
     }
 
     this._winningOutcome = this._marketInfo.winningOutcome
