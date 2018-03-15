@@ -65,10 +65,6 @@ class Market {
     logInfo('Funding transaction was mined')
   }
 
-  formatWinningOutcome () {
-    return this._marketInfo.outcomes ? this._marketInfo.outcomes[this._marketInfo.winningOutcome] : `${this._marketInfo.winningOutcome / (10 ^ this._marketInfo.decimals)} ${this._marketInfo.unit}`
-  }
-
   async resolve () {
     let oracle, outcomeSet
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)

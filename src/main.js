@@ -2,9 +2,9 @@ import { main as deploy } from './deploy'
 import { main as resolve } from './resolve'
 
 if (process.argv.indexOf('deploy') >= 2) {
-  deploy()
+  deploy(process.argv)
 } else if (process.argv.indexOf('resolve') >= 2) {
-  resolve()
+  resolve(process.argv)
 } else {
-  deploy()
+  deploy(process.argv)
 }

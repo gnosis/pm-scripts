@@ -1,14 +1,21 @@
 /**
 * Collection of useful functions for the market creation/resolution process
 */
-import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH, SDK_VERSION } from './constants'
+import {
+  DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH, SDK_VERSION,
+  MARKET_STAGES
+} from './constants'
 import { logSuccess, logInfo, logError, logWarn } from './log'
+import { readFile, fileExists } from './os'
 import { capitalizeFirstLetter } from './string'
 import CentralizedOracle from './../oracles/centralizedOracle'
 import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
+import Token from './../tokens'
 import Market from './../markets'
 import MarketValidator from './../validators/marketValidator'
+import ConfigValidator from './../validators/configValidator'
+import FileWriter from './fileWriter'
 import Client from './../clients/ethereum'
 import readlineSync from 'readline-sync'
 import minimist from 'minimist'
@@ -19,7 +26,11 @@ import minimist from 'minimist'
 const printTokenBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
-  logSuccess(`Your current collateral token balance is ${balance} WETH`)
+  let message = `Your current collateral token balance is ${balance} WETH`
+  if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
+    message += `, will wrap ${configInstance.amountOfTokens} tokens more`
+  }
+  logSuccess(message)
 }
 
 /**
@@ -76,6 +87,8 @@ const createOracle = async (eventDescription, configInstance) => {
   const oracle = new CentralizedOracle(eventDescription, configInstance)
   await oracle.create()
   eventDescription.oracleAddress = oracle.getAddress()
+  eventDescription.ipfsHash = oracle.getIpfsHash()
+  logInfo(`Event Description saved to IPFS, check it out: ${configInstance.ipfsUrl}/api/v0/cat?stream-channels=true&arg=${eventDescription.ipfsHash}`)
   logInfo(`Centralized Oracle with address ${eventDescription.oracleAddress} created successfully`)
   return eventDescription
 }
@@ -129,20 +142,38 @@ const fundMarket = async (marketDescription, configInstance) => {
 }
 
 /**
+* Returns a formatted string representing the winning outcome
+* accordingly the market type and the decimals in case of Scalar markets.
+*/
+const formatWinningOutcome = marketInfo => {
+  return marketInfo.outcomes ? marketInfo.outcomes[marketInfo.winningOutcome] : `${marketInfo.winningOutcome / (10 ** marketInfo.decimals)} ${marketInfo.unit}`
+}
+
+/**
 * Resolves a market only if winningOutcome is defined in the markets configuration
 * file.
 */
 const resolveMarket = async (marketDescription, configInstance) => {
-  logInfo(`Resolving Market with address ${marketDescription.marketAddress}...`)
-  const market = new Market(marketDescription, configInstance)
   if (!marketDescription.winningOutcome) {
     logWarn(`No winning outcome set for market ${marketDescription.marketAddress}`)
   } else {
-    try {
-      await market.resolve()
-      logInfo(`Market with address ${marketDescription.marketAddress} resolved successfully with outcome ${market.formatWinningOutcome()}`)
-    } catch (error) {
-      logError(error)
+    // Check whether market was already resolved or not
+    const oracleInstance = await configInstance.gnosisJS.contracts.CentralizedOracle.at(marketDescription.oracleAddress)
+    const marketInstance = await configInstance.gnosisJS.contracts.Market.at(marketDescription.marketAddress)
+    const stage = await marketInstance.stage()
+    const outcomeSet = await oracleInstance.isOutcomeSet()
+    if (stage.toNumber() === MARKET_STAGES.closed && outcomeSet) {
+      logInfo('Market already resolved, skipping it')
+    } else {
+      // Start resolving
+      logInfo(`Resolving Market with address ${marketDescription.marketAddress}...`)
+      const market = new Market(marketDescription, configInstance)
+      try {
+        await market.resolve()
+        logInfo(`Market with address ${marketDescription.marketAddress} resolved successfully with outcome ${formatWinningOutcome(marketDescription)}`)
+      } catch (error) {
+        logError(error)
+      }
     }
   }
   return marketDescription
@@ -225,7 +256,8 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
 
       if (steps[step][x].name === 'resolveMarket') {
         if (marketDescription.winningOutcome) {
-          if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${marketDescription.winningOutcome}?`, false)) {
+          const formattedOutcome = formatWinningOutcome(marketDescription)
+          if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
             // skip
             continue
           }
@@ -244,6 +276,105 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
     }
   }
   return marketDescription
+}
+
+/**
+* Main project executor:
+* Executor -> runProcessStack
+* -c : configuration file path, default /conf/config.json
+* -m : market description file path, default /conf/market.json
+* -w : wrap amount of tokens into ether token
+*/
+const executor = async (args, executionType, steps) => {
+  let marketFile, step
+  let configInstance, configValidator, tokenIstance
+  args = processArgs(args)
+  // If the provided (or default) market file doesn't exist,
+  // raise an error and abort
+  if (fileExists(args.marketPath)) {
+    // read market file JSON content
+    try {
+      marketFile = readFile(args.marketPath)
+    } catch (error) {
+      // File format not JSON compatible
+      logError(`File ${args.marketPath} is not JSON compliant, please modify it.`)
+      process.exit(1)
+    }
+  } else {
+    logWarn(`Market file doesn't exist on path: ${args.marketPath}`)
+    process.exit(1)
+  }
+
+  // Instantiate file writer
+  const fileWriter = new FileWriter(args.marketPath, [], false)
+
+  // Validate user file configuration
+  configValidator = new ConfigValidator(args.configPath)
+  try {
+    await configValidator.isValid()
+    await configValidator.normalize()
+    configInstance = configValidator.getConfig()
+  } catch (error) {
+    logError(error)
+    process.exit(1)
+  }
+
+  if (args.amountOfTokens && args.amountOfTokens > 0) {
+    configInstance.wrapTokens = true
+    configInstance.amountOfTokens = args.amountOfTokens / 1e18
+  }
+
+  logSuccess('Your market file content:')
+  logInfo(JSON.stringify(marketFile, undefined, 4))
+  // Display user tokens balance
+  await printTokenBalance(configInstance)
+  await printAccountBalance(configInstance)
+  // Ask user to confirm the input JSON description or stop the process
+  askConfirmation('Do you wish to continue?')
+
+  // Get current market step from market file
+  let marketFileCopy = marketFile.slice()
+  let abort = false
+
+  // Start deploy process
+  logInfo(`Starting ${executionType}, it could take up to 1 minute...`)
+
+  if (configInstance.wrapTokens) {
+    // wrap tokens
+    try {
+      logInfo(`Wrapping ${configInstance.amountOfTokens} tokens...`)
+      tokenIstance = new Token(configInstance)
+      await tokenIstance.wrapTokens(configInstance.amountOfTokens)
+      logInfo('Tokens wrapped successfully')
+    } catch (error) {
+      logError(error)
+      process.exit(1)
+    }
+  }
+
+  try {
+    for (let x in marketFileCopy) {
+      let currentMarket = marketFileCopy[x]
+      step = getMarketStep(currentMarket)
+      let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
+      marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
+    }
+    logInfo(`${executionType} done, writing updates to ${args.marketPath}`)
+  } catch (error) {
+    // Error logged to console by function raising the error
+    logWarn('Writing updates before aborting...')
+    abort = true
+  } finally {
+    fileWriter.setFilePath(args.marketPath)
+    fileWriter.setData(marketFileCopy)
+    fileWriter.write()
+    if (abort) {
+      logWarn('Updates written successfully, aborting')
+      process.exit(1)
+    } else {
+      logSuccess(`Updates written successfully to ${args.marketPath}`)
+    }
+  }
 }
 
 const consoleHelper = () => {
@@ -273,9 +404,11 @@ module.exports = {
   createEvent,
   createMarket,
   fundMarket,
+  formatWinningOutcome,
   resolveMarket,
   runProcessStack,
   processArgs,
   consoleHelper,
-  versionHelper
+  versionHelper,
+  executor
 }
