@@ -1,5 +1,7 @@
-import { MARKET_STAGES } from '../utils/constants'
+import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
+import { logInfo } from '../utils/log'
 import { promisify } from '@gnosis.pm/gnosisjs'
+import sleep from 'sleep'
 
 class Market {
   constructor (marketInfo, configInstance) {
@@ -17,8 +19,13 @@ class Market {
   }
 
   async create () {
-    const market = await this._configInstance.gnosisJS.createMarket(this._marketInfo)
-    this._marketAddress = market.address
+    try {
+      const market = await this._configInstance.gnosisJS.createMarket(this._marketInfo)
+      this._marketAddress = market.address
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
   }
 
   async fund () {
@@ -28,26 +35,28 @@ class Market {
     // Approve tokens transferral
     await etherToken.approve(this._marketAddress, this._marketInfo.funding)
     // // Fund market
-    const txResponse = await market.fund(this._marketInfo.funding)
+    const txResponse = await market.fund(this._marketInfo.funding, { gas: 300000000 })
     // First transaction check
-    if (txResponse.receipt && txResponse.receipt.status === '0x0') {
+    if (txResponse.receipt && txResponse.receipt.status === 0) {
       throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-    } else if (txResponse.receipt && txResponse.status === '0x1') {
+    } else if (txResponse.receipt && txResponse.receipt.status === 1) {
       return
     }
-
+    logInfo(`Waiting for funding transaction to be mined, tx hash: ${txResponse.tx}`)
     const web3 = this._configInstance.blockchainProvider.getWeb3()
     while (true) {
+      sleep.msleep(TX_LOOKUP_TIME)
       txReceipt = await promisify(web3.eth.getTransactionReceipt)(txResponse.tx)
       if (!txReceipt) {
         continue
-      } else if (txReceipt && txReceipt.status === '0x0') {
+      } else if (txReceipt && txReceipt.status === 0) {
         // handle error, transaction failed
         throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-      } else if (txReceipt && txReceipt.status === '0x1') {
+      } else if (txReceipt && txReceipt.status === 1) {
         break
       }
     }
+    logInfo('Funding transaction was mined')
   }
 
   formatWinningOutcome () {
