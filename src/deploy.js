@@ -114,7 +114,6 @@ const main = async () => {
   }
 }
 
-/**
-* Entry point
-*/
-main()
+module.exports = {
+  main
+}

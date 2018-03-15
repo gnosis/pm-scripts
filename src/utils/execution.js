@@ -1,7 +1,7 @@
 /**
 * Collection of useful functions for the market creation/resolution process
 */
-import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH } from './constants'
+import { DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH, SDK_VERSION } from './constants'
 import { logSuccess, logInfo, logError, logWarn } from './log'
 import { capitalizeFirstLetter } from './string'
 import CentralizedOracle from './../oracles/centralizedOracle'
@@ -166,6 +166,10 @@ const processArgs = argv => {
       consoleHelper()
       process.exit(0)
     }
+    if (argv.indexOf('-v') >= 2 || argv.indexOf('-version') >= 2) {
+      versionHelper()
+      process.exit(0)
+    }
     // Configuration file param check
     if (args.f && typeof args.f === 'string') {
       logInfo(`Using configuration file: ${args.f}`)
@@ -231,15 +235,21 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
 }
 
 const consoleHelper = () => {
-  console.info('GNOSIS SDK')
-  console.info('Deploy usage: npm run start -- <commands>')
-  console.info('Other deploy usage: node lib/deploy <commands>')
-  console.info('Resolution usage: npm run resolve -- <commands>')
-  console.info('Other resolution usage: node lib/deploy <commands>')
+  console.info(`GNOSIS SDK - ${SDK_VERSION}`)
+  console.info('Deploy usage: node lib/main.js deploy <commands>')
+  console.info('Other usage: npm run deploy -- <commands>')
+  console.info('Resolution usage: node lib/main.js resolve <commands>')
+  console.info('Other resolution usage: npm run resolve -- <commands>')
   console.info('Commands:')
   console.info('-f\tabsolute path to your configuration file.')
   console.info('-m\tabsolute path to your markets file.')
   console.info('-w\tamount of collateral tokens to wrap')
+  console.info('-h or -help\tGnosis SDK helper')
+  console.info('-v or -version\tGnosis SDK version')
+}
+
+const versionHelper = () => {
+  console.info(`GNOSIS SDK - ${SDK_VERSION}`)
 }
 
 module.exports = {
@@ -254,5 +264,6 @@ module.exports = {
   resolveMarket,
   runProcessStack,
   processArgs,
-  consoleHelper
+  consoleHelper,
+  versionHelper
 }
