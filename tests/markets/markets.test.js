@@ -3,7 +3,7 @@ import CentralizedOracle from '../../src/oracles/centralizedOracle'
 import CategoricalEvent from '../../src/events/categoricalEvent'
 import ScalarEvent from '../../src/events/scalarEvent'
 import Market from '../../src/markets'
-import { categoricalEventDescription, scalarEventDescription } from '../helpers/market'
+import { categoricalEventDescription, scalarEventDescription, defaultGas } from '../helpers/market'
 import { configDir } from '../helpers/generics'
 import Token from '../../src/tokens'
 import expect from 'expect.js'
@@ -34,7 +34,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create Market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH', gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()
@@ -83,7 +83,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH', gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()

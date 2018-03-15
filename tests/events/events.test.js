@@ -2,7 +2,7 @@ import ConfigValidator from '../../src/validators/configValidator'
 import CentralizedOracle from '../../src/oracles/centralizedOracle'
 import CategoricalEvent from '../../src/events/categoricalEvent'
 import ScalarEvent from '../../src/events/scalarEvent'
-import { categoricalEventDescription, scalarEventDescription } from '../helpers/market'
+import { categoricalEventDescription, scalarEventDescription, defaultGas } from '../helpers/market'
 import { configDir } from '../helpers/generics'
 import expect from 'expect.js'
 
@@ -26,7 +26,6 @@ describe('Events', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
   })
-
   it('Scalar Event', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
     await validator.isValid()
@@ -37,7 +36,7 @@ describe('Events', function () {
     const oracleAddress = oracle.getAddress()
     expect(oracleAddress).to.be.a('string')
     expect(oracleAddress.length).to.be(42)
-    const eventInfo = Object.assign(scalarEventDescription, {oracleAddress})
+    const eventInfo = Object.assign(scalarEventDescription, {oracleAddress}, { gas: defaultGas })
     const event = new ScalarEvent(eventInfo, config)
     await event.create()
     const eventAddress = event.getAddress()
