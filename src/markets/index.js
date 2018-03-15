@@ -47,12 +47,18 @@ class Market {
     while (true) {
       sleep.msleep(TX_LOOKUP_TIME)
       txReceipt = await promisify(web3.eth.getTransactionReceipt)(txResponse.tx)
+      // the transaction receipt shall cointain the status property
+      // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
       if (!txReceipt) {
         continue
       } else if (txReceipt && txReceipt.status === 0) {
         // handle error, transaction failed
         throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
       } else if (txReceipt && txReceipt.status === 1) {
+        break
+      } else if (txReceipt && txReceipt.status === '0x0') {
+        throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+      } else if (txReceipt && txReceipt.status === '0x1') {
         break
       }
     }
