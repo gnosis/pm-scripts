@@ -45,7 +45,7 @@ Contains the main SDK configuration and has the following structure:
 * gnosisDB, defines the GnosisDB url an Ethereum indexer with exposes an handy API to get your list of markets and their details (default: https://gnosisdb.rinkeby.gnosis.pm:443);
 * ipfs, sets the IPFS node the SDK should send transactions to (https://ipfs.infura.io:5001 by default);
 * gasPrice, the desidered gasPrice
-* collateralToken, the Collateral Token contract's address (Rinkeby: 0xd19bce9f7693598a9fa1f94c548b20887a33f141)
+* collateralToken, the Collateral Token contract's address (Rinkeby: 0xd19bce9f7693598a9fa1f94c548b20887a33f141, Kovan: 0x9326454039077bcea0705d6b68c8e9b104094a1c)
 
 ### Market.json
 Contains a JSON array and defines all the markets you want to create and manage.
@@ -100,6 +100,8 @@ An array of text fields representing the available outcomes for the market.
 
 
 ### How to run the SDK
+Before to get started make sure you hold enough balance on your account or transactions could fail.
+
 The main SDK entry point is the lib/main.js file.
 The two main options are *deploy* and *resolve*:
 `node lib/main.js deploy`
@@ -111,13 +113,14 @@ followed by the full absolute path to your files:
 
 In order to fund markets you may want to wrap Ethers to Collater Tokens.
 Just provide the *-w* parameter followed by the amount of tokens you want to wrap.
+
 The following example wraps 1 Token before deploying the contracts defined into the
 default /conf directory of the SDK project:
 `node lib/main.js deploy -w 1e18`
 
 
 #### Getting help
-node lib/main.js -help
+`node lib/main.js -help`
 
 #### Resolving markets
 In order to resolve markets you will have to specify, inside the market definition file, the winningOutcome property.

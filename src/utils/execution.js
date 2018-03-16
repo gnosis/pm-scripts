@@ -119,7 +119,7 @@ const createMarket = async (marketDescription, configInstance) => {
   const market = new Market(marketDescription, configInstance)
   await market.create()
   marketDescription.marketAddress = market.getAddress()
-  logInfo(`Market with address ${marketDescription.marketAddress} created successfully`)
+  logInfo(`Market with address ${marketDescription.marketAddress} created successfully, check it out: ${configInstance.gnosisDBUrl}/api/markets/${marketDescription.marketAddress}`)
   return marketDescription
 }
 
