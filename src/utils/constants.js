@@ -5,6 +5,7 @@ const HD_WALLET_ACCOUNTS = 10
 const ETH_ADDRESS_LENGTH = 42
 const DEFAULT_CONFIG_FILE_PATH = path.join(__dirname, '../../conf/config.json')
 const DEFAULT_MARKET_FILE_PATH = path.join(__dirname, '../../conf/markets.json')
+const SDK_VERSION = '0.0.1'
 
 const MARKET_STAGES = {
   created: 0,
@@ -18,5 +19,6 @@ module.exports = {
   DEFAULT_CONFIG_FILE_PATH,
   DEFAULT_MARKET_FILE_PATH,
   MARKET_STAGES,
-  HD_WALLET_ACCOUNTS
+  HD_WALLET_ACCOUNTS,
+  SDK_VERSION
 }

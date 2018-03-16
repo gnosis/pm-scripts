@@ -2,20 +2,20 @@
   "mnemonic": "",
   "account": "",
   "blockchain": {
-    "protocol": "",
-    "host": "",
-    "port": ""
+    "protocol": "https",
+    "host": "rinkeby.infura.io/gnosis/",
+    "port": "443"
   },
   "gnosisDB": {
-    "protocol": "",
-    "host": "",
-    "port": ""
+    "protocol": "https",
+    "host": "gnosisdb.staging.gnosisdev.com",
+    "port": "443"
   },
   "ipfs": {
-    "protocol": "",
-    "host": "",
-    "port": ""
+    "protocol": "https",
+    "host": "ipfs.infura.io",
+    "port": "5001"
   },
-  "gasPrice": "",
+  "gasPrice": "1000000000",
   "collateralToken": ""
 }

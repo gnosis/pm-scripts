@@ -1,5 +1,5 @@
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
-import { logInfo } from '../utils/log'
+import { logInfo, logSuccess } from '../utils/log'
 import { promisify } from '@gnosis.pm/gnosisjs'
 import sleep from 'sleep'
 
@@ -35,7 +35,7 @@ class Market {
     // Approve tokens transferral
     await etherToken.approve(this._marketAddress, this._marketInfo.funding)
     // // Fund market
-    const txResponse = await market.fund(this._marketInfo.funding, { gas: 300000000 })
+    const txResponse = await market.fund(this._marketInfo.funding)
     // First transaction check
     if (txResponse.receipt && txResponse.receipt.status === 0) {
       throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
@@ -47,6 +47,8 @@ class Market {
     while (true) {
       sleep.msleep(TX_LOOKUP_TIME)
       txReceipt = await promisify(web3.eth.getTransactionReceipt)(txResponse.tx)
+      // the transaction receipt shall cointain the status property
+      // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
       if (!txReceipt) {
         continue
       } else if (txReceipt && txReceipt.status === 0) {
@@ -54,13 +56,13 @@ class Market {
         throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
       } else if (txReceipt && txReceipt.status === 1) {
         break
+      } else if (txReceipt && txReceipt.status === '0x0') {
+        throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+      } else if (txReceipt && txReceipt.status === '0x1') {
+        break
       }
     }
     logInfo('Funding transaction was mined')
-  }
-
-  formatWinningOutcome () {
-    return this._marketInfo.outcomes ? this._marketInfo.outcomes[this._marketInfo.winningOutcome] : `${this._marketInfo.winningOutcome / (10 ^ this._marketInfo.decimals)} ${this._marketInfo.unit}`
   }
 
   async resolve () {
@@ -87,6 +89,7 @@ class Market {
         }
         sleep.msleep(TX_LOOKUP_TIME)
       }
+      logSuccess(`Market ${this._marketAddress} resolved successfully`)
     }
 
     this._winningOutcome = this._marketInfo.winningOutcome

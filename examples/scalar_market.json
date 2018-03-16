@@ -1,0 +1,15 @@
+[
+  {
+    "title": "What will the expected volatility of the Ethereum market be by December 31st over a 30-day estimate?",
+    "description": "What will the expected volatility of the Ethereum market be by December 31st, 2018, over a 30-day estimate? Source: https://www.buybitcoinworldwide.com/ethereum-volatility/",
+    "resolutionDate": "2018-12-31T18:00:00.000Z",
+    "outcomeType": "SCALAR",
+    "upperBound": "11",
+    "lowerBound": "2",
+    "decimals": 0,
+    "unit": "%",
+    "currency": "WETH",
+    "fee": "0",
+    "funding": "1e18"
+  }
+]

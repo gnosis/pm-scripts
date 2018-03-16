@@ -1,0 +1,16 @@
+[
+  {
+    "title": "What will be the median gas price on December 31st, 2018?",
+    "description": "What will be the median gas price payed among all transactions on December 31st, 2018?",
+    "resolutionDate": "2018-12-31T18:00:00.000Z",
+    "outcomeType": "CATEGORICAL",
+    "outcomes": [
+      "< 20 GWEI",
+      "20 GWEI",
+      "> 20 GWEI"
+    ],
+    "currency": "WETH",
+    "fee": "0",
+    "funding": "1e18"
+  }
+]
