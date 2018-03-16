@@ -10,7 +10,7 @@ The Gnosis SDK Utils should work for any OS. It has the following system require
 
 ## Supported chains
 The SDK can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
-[GnosisDB](https://github.com/gnosis/gnosisdb/) currently support only Mainnet and Rinkeby networks.
+[GnosisDB](https://github.com/gnosis/gnosisdb/) currently supports only Mainnet and Rinkeby networks.
 In order to deploy contract on Kovan or Ropsten you would need to install an instance of GnosisDB with the specific Ethereum node settings.
 We encourage users to use the Rinkeby network.
 
