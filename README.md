@@ -39,10 +39,10 @@ Contains the main SDK configuration and has the following structure:
 }
 ```
 
-* mnemonic, is your HD wallet mnemonic phrase;
+* mnemonic, is your HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider));
 * account, is your ethereum address, all transactions will be sent from this address. If not provided, the SDK will calculate it from your mnemonic phrase;
 * blockchain, defines the Ethereum Node the SDK should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
-* gnosisDB, defines the GnosisDB url (https://gnosisdb.staging.gnosisdev.com:443 by default);
+* gnosisDB, defines the GnosisDB url an Ethereum indexer with exposes an handy API to get your list of markets and their details (default: https://gnosisdb.rinkeby.gnosis.pm:443);
 * ipfs, sets the IPFS node the SDK should send transactions to (https://ipfs.infura.io:5001 by default);
 * gasPrice, the desidered gasPrice
 * collateralToken, the Collateral Token contract's address (Rinkeby: 0xd19bce9f7693598a9fa1f94c548b20887a33f141)

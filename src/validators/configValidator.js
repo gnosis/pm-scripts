@@ -40,7 +40,7 @@ class ConfigValidator extends BaseValidator {
     this._defaults = {
       'gnosisDB': {
         'protocol': 'https',
-        'host': 'gnosisdb.staging.gnosisdev.com',
+        'host': 'gnosisdb.rinkeby.gnosis.pm',
         'port': 443
       },
       'ipfs': {
