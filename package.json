@@ -1,7 +1,7 @@
 {
   "name": "gnosis-sdk-utils",
   "version": "0.1.0",
-  "description": "NodeJS utils for handling markets' operations like creation and resolution.",
+  "description": "NodeJS utils easing Gnosis markets' operations.",
   "main": "src/main.js",
   "scripts": {
     "deploy": "npm run build && node lib/main.js deploy",
