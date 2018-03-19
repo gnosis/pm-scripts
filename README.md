@@ -8,6 +8,7 @@ The Gnosis SDK Utils should work for any OS. It has the following system require
 * NPM (should be installed with Node.js, and versions >= 5 should work)
 
 To install all the required software dependencies clone the project, go to the root folder and run:
+
 ```npm install``` 
 
 ## Supported chains
