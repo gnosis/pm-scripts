@@ -1,6 +1,6 @@
 {
   "name": "gnosis-sdk-utils",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "NodeJS utils for handling markets' operations like creation and resolution.",
   "main": "src/main.js",
   "scripts": {
