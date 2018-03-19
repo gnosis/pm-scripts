@@ -7,6 +7,8 @@ The Gnosis SDK Utils should work for any OS. It has the following system require
 * Node.js (versions >= 7 should work)
 * NPM (should be installed with Node.js, and versions >= 5 should work)
 
+To install all the required software dependencies clone the project, go to the root folder and run:
+```npm install``` 
 
 ## Supported chains
 The SDK can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
