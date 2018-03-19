@@ -7,6 +7,15 @@ The Gnosis SDK Utils should work for any OS. It has the following system require
 * Node.js (versions >= 7 should work)
 * NPM (should be installed with Node.js, and versions >= 5 should work)
 
+To install all the required software dependencies clone the project, go to the root folder and run:
+
+```npm install``` 
+
+## Supported chains
+The SDK can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
+[GnosisDB](https://github.com/gnosis/gnosisdb/) currently supports only Mainnet and Rinkeby networks.
+In order to deploy contract on Kovan or Ropsten you would need to install an instance of GnosisDB with the specific Ethereum node settings.
+We encourage users to use the Rinkeby network.
 
 ## Configuration
 The *conf* directory contains all the configuration files needed by the SDK, which are: **config.json** and **markets.json**.
@@ -113,16 +122,21 @@ followed by the full absolute path to your files:
 
 In order to fund markets you may want to wrap Ethers to Collater Tokens.
 Just provide the *-w* parameter followed by the amount of tokens you want to wrap.
+
 The following example wraps 1 Token before deploying the contracts defined into the
 default /conf directory of the SDK project:
 `node lib/main.js deploy -w 1e18`
 
 
 #### Getting help
-node lib/main.js -help
+`node lib/main.js -help`
 
 #### Resolving markets
 In order to resolve markets you will have to specify, inside the market definition file, the winningOutcome property.
 Pay attention on the market type, for Scalar markets the winning outcome will ever be a value between the upper and lower bound of the market accordingly the number of decimals for the market. For categorical markets, the winningOutcome will ever be the index of the outcome in the 0-index outcomes array property.
 
 Finally run `node lib/main.js resolve`.
+
+#### Fetch markets data: GnosisDB API
+[GnosisDB](https://github.com/gnosis/gnosisdb/) provides a handy Rest API serving all markets created on top of Gnosis.
+Once you create a market, go to https://gnosisdb.rinkeby.gnosis.pm:443/api/markets/{market_address} replace {market_address} with the address of your market and you will get access to all the market's data.
