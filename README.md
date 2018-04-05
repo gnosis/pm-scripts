@@ -9,7 +9,7 @@ The Gnosis SDK Utils should work for any OS. It has the following system require
 
 To install all the required software dependencies clone the project, go to the root folder and run:
 
-```npm install``` 
+```npm install```
 
 ## Supported chains
 The SDK can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
@@ -140,3 +140,7 @@ Finally run `node lib/main.js resolve`.
 #### Fetch markets data: GnosisDB API
 [GnosisDB](https://github.com/gnosis/gnosisdb/) provides a handy Rest API serving all markets created on top of Gnosis.
 Once you create a market, go to https://gnosisdb.rinkeby.gnosis.pm:443/api/markets/{market_address} replace {market_address} with the address of your market and you will get access to all the market's data.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
