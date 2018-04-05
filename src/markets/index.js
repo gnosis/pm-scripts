@@ -31,7 +31,7 @@ class Market {
   async fund () {
     let txReceipt
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const etherToken = this._configInstance.gnosisJS.contracts.EtherToken.at(this._configInstance.collateralToken)
+    const etherToken = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
     // Approve tokens transferral
     await etherToken.approve(this._marketAddress, this._marketInfo.funding)
     // // Fund market
