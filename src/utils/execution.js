@@ -345,7 +345,10 @@ const executor = async (args, executionType, steps) => {
       logInfo(`Wrapping ${configInstance.amountOfTokens / 1e18 } tokens...`)
       tokenIstance = new Token(configInstance)
       await tokenIstance.wrapTokens(configInstance.amountOfTokens)
+      configInstance.wrapTokens = false
       logInfo('Tokens wrapped successfully')
+      // print updated balance
+      await printTokenBalance(configInstance)
     } catch (error) {
       logError(error)
       process.exit(1)

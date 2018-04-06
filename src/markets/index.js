@@ -1,5 +1,6 @@
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
 import { logInfo, logSuccess } from '../utils/log'
+import { isPlayMoneyToken, getPlayMoneyTokenInstance } from '../utils/tokens'
 import { promisify } from '@gnosis.pm/gnosisjs'
 import sleep from 'sleep'
 
@@ -31,18 +32,33 @@ class Market {
   async fund () {
     let txReceipt
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const etherToken = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
+    const collateralTokenIstance = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
+
+    // Check if token is play money token
+    if (await isPlayMoneyToken(this._configInstance)) {
+      const playTokenIstance = getPlayMoneyTokenInstance(this._configInstance)
+      await playTokenIstance.allowTransfers([
+        this._marketInfo.marketAddress,
+        this._marketInfo.eventAddress
+      ])     
+    }
+
     // Approve tokens transferral
-    await etherToken.approve(this._marketAddress, this._marketInfo.funding)
+    await collateralTokenIstance.approve(this._marketAddress, this._marketInfo.funding)
+
     // // Fund market
     const txResponse = await market.fund(this._marketInfo.funding)
-    // First transaction check
-    if (txResponse.receipt && txResponse.receipt.status === 0) {
+
+    // First transaction check 
+    if (txResponse.receipt && parseInt(txResponse.receipt.status) === 0) {
       throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-    } else if (txResponse.receipt && txResponse.receipt.status === 1) {
+    } else if (txResponse.receipt && parseInt(txResponse.receipt.status) === 1) {
+      // success
       return
     }
+
     logInfo(`Waiting for funding transaction to be mined, tx hash: ${txResponse.tx}`)
+
     const web3 = this._configInstance.blockchainProvider.getWeb3()
     while (true) {
       sleep.msleep(TX_LOOKUP_TIME)
