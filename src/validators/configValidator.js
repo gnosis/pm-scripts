@@ -4,6 +4,7 @@ import Client from '../clients/ethereum'
 import { HD_WALLET_ACCOUNTS } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
 import Gnosis from '@gnosis.pm/gnosisjs'
+import olympiaArtifacts from '@gnosis.pm/olympia-token'
 import fs from 'fs'
 
 class ConfigValidator extends BaseValidator {
@@ -178,6 +179,11 @@ class ConfigValidator extends BaseValidator {
 
     // Create GnosisJS instance
     const gnosisjsInstance = await Gnosis.create(gnosisOptions)
+    await gnosisjsInstance.importContracts(olympiaArtifacts, {
+      OlympiaToken: 'olympiaToken',
+      AddressRegistry: 'olympiaAddressRegistry',
+      PlayToken: 'playToken'
+    })
     newConfig.gnosisJS = gnosisjsInstance
     // Set new updated config
     this.setConfig(newConfig)
