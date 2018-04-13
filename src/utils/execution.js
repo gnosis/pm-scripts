@@ -24,11 +24,11 @@ import minimist from 'minimist'
 * Prints out the token balance of the account defined in the configuration
 */
 const printTokenBalance = async configInstance => {
-  const etherToken = await configInstance.gnosisJS.contracts.EtherToken.at(configInstance.collateralToken)
+  const etherToken = await configInstance.gnosisJS.contracts.Token.at(configInstance.collateralToken)
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
   let message = `Your current collateral token balance is ${balance} WETH`
   if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
-    message += `, will wrap ${configInstance.amountOfTokens} tokens more`
+    message += `, will wrap ${configInstance.amountOfTokens / 1e18} tokens more`
   }
   logSuccess(message)
 }
@@ -287,7 +287,7 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
 */
 const executor = async (args, executionType, steps) => {
   let marketFile, step
-  let configInstance, configValidator, tokenIstance
+  let configInstance, configValidator, tokenInstance
   args = processArgs(args)
   // If the provided (or default) market file doesn't exist,
   // raise an error and abort
@@ -321,7 +321,7 @@ const executor = async (args, executionType, steps) => {
 
   if (args.amountOfTokens && args.amountOfTokens > 0) {
     configInstance.wrapTokens = true
-    configInstance.amountOfTokens = args.amountOfTokens / 1e18
+    configInstance.amountOfTokens = args.amountOfTokens
   }
 
   logSuccess('Your market file content:')
@@ -342,10 +342,13 @@ const executor = async (args, executionType, steps) => {
   if (configInstance.wrapTokens) {
     // wrap tokens
     try {
-      logInfo(`Wrapping ${configInstance.amountOfTokens} tokens...`)
-      tokenIstance = new Token(configInstance)
-      await tokenIstance.wrapTokens(configInstance.amountOfTokens)
+      logInfo(`Wrapping ${configInstance.amountOfTokens / 1e18 } tokens...`)
+      tokenInstance = new Token(configInstance)
+      await tokenInstance.wrapTokens(configInstance.amountOfTokens)
+      configInstance.wrapTokens = false
       logInfo('Tokens wrapped successfully')
+      // print updated balance
+      await printTokenBalance(configInstance)
     } catch (error) {
       logError(error)
       process.exit(1)
