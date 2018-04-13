@@ -135,6 +135,9 @@ default /conf directory of the SDK project:
 
 `node lib/main.js deploy -w 1e18`
 
+#### Tournament operators
+You should include in `package.json` your olympia-token version with the deployed contract you want to use.
+By default it's using `npm install @gnosis.pm/olympia-token`.
 
 #### Getting help
 
