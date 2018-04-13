@@ -1,6 +1,6 @@
 const isPlayMoneyToken = async configInstance => {
   try {
-    const playTokenInstance = configInstance.gnosisJS.contracts.PlatToken.at(configInstance.collateralToken)
+    const playTokenInstance = await configInstance.gnosisJS.contracts.PlayToken.at(configInstance.collateralToken)
     if (playTokenInstance.isPlayToken && await playTokenInstance.isPlayToken() === true) {
       return true
     } else {
@@ -12,7 +12,7 @@ const isPlayMoneyToken = async configInstance => {
 }
 
 const getPlayMoneyTokenInstance = configInstance => {
-  return configInstance.gnosisJS.contracts.PlatToken.at(configInstance.collateralToken)
+  return configInstance.gnosisJS.contracts.PlayToken.at(configInstance.collateralToken)
 }
 
 module.exports = {
