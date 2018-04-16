@@ -25,8 +25,12 @@ import minimist from 'minimist'
 */
 const printTokenBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.Token.at(configInstance.collateralToken)
+  const tokenInfo = await new Token(configInstance).getInfo()
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
-  let message = `Your current collateral token balance is ${balance} WETH`
+  const tokenName = tokenInfo.name !== undefined ? tokenInfo.name : 'Wrapped Ether Token'
+  const tokenSymbol = tokenInfo.symbol !== undefined ? tokenInfo.symbol : 'WETH'
+  let message = `Your current collateral token balance is ${balance} ${tokenSymbol} (${tokenName})`
+
   if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
     message += `, will wrap ${configInstance.amountOfTokens / 1e18} tokens more`
   }

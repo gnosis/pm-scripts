@@ -21,6 +21,15 @@ class Token {
     }
     return result
   }
+
+  async getInfo () {
+    const tokenContract = this._configInstance.gnosisJS.contracts.OlympiaToken.at(this._configInstance.collateralToken)
+    const info = {}
+    info['name'] = await tokenContract.name()
+    info['symbol'] = await tokenContract.symbol()
+    info['decimals'] = await tokenContract.decimals()
+    return info
+  }
 }
 
 module.exports = Token
