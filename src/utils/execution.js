@@ -25,8 +25,12 @@ import minimist from 'minimist'
 */
 const printTokenBalance = async configInstance => {
   const etherToken = await configInstance.gnosisJS.contracts.Token.at(configInstance.collateralToken)
+  const tokenInfo = await new Token(configInstance).getInfo()
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
-  let message = `Your current collateral token balance is ${balance} WETH`
+  const tokenName = tokenInfo.name !== undefined ? tokenInfo.name : 'Wrapped Ether Token'
+  const tokenSymbol = tokenInfo.symbol !== undefined ? tokenInfo.symbol : 'WETH'
+  let message = `Your current collateral token balance is ${balance} ${tokenSymbol} (${tokenName})`
+
   if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
     message += `, will wrap ${configInstance.amountOfTokens / 1e18} tokens more`
   }
@@ -61,8 +65,13 @@ const askConfirmation = (message, exit = true) => {
 * the defined steps the market management process is.
 * (Ej. Oracle creation, Event creation etc..)
 */
-const getMarketStep = marketDescription => {
-  const steps = ['oracleAddress', 'eventAddress', 'marketAddress', 'winningOutcome']
+const getMarketStep = (marketDescription, executionType) => {
+  const steps = ['oracleAddress', 'eventAddress', 'marketAddress']
+
+  if (executionType == 'resolve') {
+    steps.push('winningOutcome')
+  }
+
   let step = -1
   for (let x in steps) {
     if (!(steps[x] in marketDescription)) {
@@ -76,6 +85,7 @@ const getMarketStep = marketDescription => {
     }
     step = x
   }
+
   return step
 }
 
@@ -248,6 +258,14 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
     //
     try {
       if (steps[step][x].name === 'fundMarket') {
+        // Check if the market was already funded
+        const market = new Market(marketDescription, configInstance)
+        const stage = await market.getStage()
+
+        if (stage.toNumber() === MARKET_STAGES.funded) {
+          // skip
+          continue
+        }
         if (!askConfirmation(`Do you wish to fund the market ${marketDescription.marketAddress}?`, false)) {
           // skip
           continue
@@ -270,7 +288,11 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
       logInfo(`Ready to execute ${steps[step][x].name}`)
       marketDescription = await steps[step][x](marketDescription, configInstance)
     } catch (error) {
-      logError(`Got an execption on step ${step}`)
+      if (step === -1) {
+          logError('Got an execption')
+      } else {
+          logError(`Got an execption on step ${step}`)
+      }
       logError(error.message)
       throw error
     }
@@ -358,7 +380,7 @@ const executor = async (args, executionType, steps) => {
   try {
     for (let x in marketFileCopy) {
       let currentMarket = marketFileCopy[x]
-      step = getMarketStep(currentMarket)
+      step = getMarketStep(currentMarket, executionType)
       let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
       marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
     }
