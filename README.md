@@ -178,7 +178,7 @@ By default the sdk supports the CentralizedOracle only. Of course you would need
 * Deploy your oracle on your testnet or mainnet
 * Copy the recent deployed oracle address
 * Edit the /config/markets.json file and place a new property **oracleAddress** inside those markets you want to be created by that oracle: "oracleAddress": "0x..0"
-* Go ahead and deploy the markes
+* Go ahead and deploy the markets
 
 You will now be able to create markets using the specified oracle.
 
