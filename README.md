@@ -176,7 +176,7 @@ Once you create a market, go to https://gnosisdb.rinkeby.gnosis.pm:443/api/marke
 By default the sdk supports the CentralizedOracle only. Of course you would need to use a specific oracle, follow this few steps to enable it:
 
 * Deploy your oracle on your testnet or mainnet
-* Copy the recend deployed oracle address
+* Copy the recent deployed oracle address
 * Edit the /config/markets.json file and place a new property **oracleAddress** inside those markets you want to be created by that oracle: "oracleAddress": "0x..0"
 * Go ahead and deploy the markes
 
