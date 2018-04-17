@@ -2,6 +2,20 @@
 
 Gnosis SDK Utils is a command line tool which allows users to create and resolve prediction markets on top of Gnosis.
 
+## Index of contents
+
+- [Installation](#installation)
+- [Supported chains](#supported-chains)
+- [Configuration](#configuration)
+- [Tournament operators](#tournament-operators)
+- [Getting help](#getting-help)
+- [Resolving markets](#resolving-markets)
+- [Fetch markets data](#fetch-markets-data-gnosisdb-api)
+- [Using custom oracles](#using-custom-oracles)
+- [License](#license)
+
+## Installation
+
 The Gnosis SDK Utils should work for any OS. It has the following system requirements:
 
 * Node.js (versions >= 7 should work)
@@ -135,15 +149,15 @@ default /conf directory of the SDK project:
 
 `node lib/main.js deploy -w 1e18`
 
-#### Tournament operators
+## Tournament operators
 You should include in `package.json` your olympia-token version with the deployed contract you want to use.
 By default it's using `npm install @gnosis.pm/olympia-token`.
 
-#### Getting help
+## Getting help
 
 `node lib/main.js -help`
 
-#### Resolving markets
+## Resolving markets
 In order to resolve markets you will have to specify, inside the market definition file, the winningOutcome property.
 Pay attention on the market type, for Scalar markets the winning outcome will ever be a value between the
 upper and lower bound of the market accordingly the number of decimals for the market.
@@ -153,9 +167,21 @@ Finally run
 
 `node lib/main.js resolve`
 
-#### Fetch markets data: GnosisDB API
+## Fetch markets data: GnosisDB API
 [GnosisDB](https://github.com/gnosis/gnosisdb/) provides a handy Rest API serving all markets created on top of Gnosis.
 Once you create a market, go to https://gnosisdb.rinkeby.gnosis.pm:443/api/markets/{market_address} replace {market_address} with the address of your market and you will get access to all the market's data.
+
+## Using Custom Oracles
+
+By default the sdk supports the CentralizedOracle only. Of course you would need to use a specific oracle, follow this few steps to enable it:
+
+* Deploy your oracle on your testnet or mainnet
+* Copy the recent deployed oracle address
+* Edit the /config/markets.json file and place a new property **oracleAddress** inside those markets you want to be created by that oracle: "oracleAddress": "0x..0"
+* Go ahead and deploy the markes
+
+You will now be able to create markets using the specified oracle.
+
 
 ## License
 
