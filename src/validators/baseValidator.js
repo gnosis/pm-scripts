@@ -11,7 +11,7 @@ class BaseValidator {
 
   numberRequired (value) {
     try {
-      return (value !== undefined && value !== null && parseFloat(value))
+      return (value !== undefined && value !== null && parseFloat(value) !== undefined)
     } catch (err) {
       return false
     }
