@@ -164,7 +164,7 @@ const formatWinningOutcome = marketInfo => {
 * file.
 */
 const resolveMarket = async (marketDescription, configInstance) => {
-  if (!marketDescription.winningOutcome) {
+  if (marketDescription.winningOutcome === undefined) {
     logWarn(`No winning outcome set for market ${marketDescription.marketAddress}`)
   } else {
     // Check whether market was already resolved or not
@@ -273,7 +273,7 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
       }
 
       if (steps[step][x].name === 'resolveMarket') {
-        if (marketDescription.winningOutcome) {
+        if (marketDescription.winningOutcome !== undefined) {
           const formattedOutcome = formatWinningOutcome(marketDescription)
           if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
             // skip
