@@ -1,6 +1,6 @@
 {
-  "name": "gnosis-sdk-utils",
-  "version": "0.3.1",
+  "name": "pm-scripts",
+  "version": "1.0.0",
   "description": "NodeJS utils easing Gnosis markets' operations.",
   "main": "src/main.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gnosis/gnosis-sdk-utils.git"
+    "url": "git+https://github.com/gnosis/pm-scripts.git"
   },
   "keywords": [
     "GnosisJS",
@@ -20,9 +20,9 @@
   "author": "Gnosis LTD",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/gnosis/gnosis-sdk-utils/issues"
+    "url": "https://github.com/gnosis/pm-scripts/issues"
   },
-  "homepage": "https://github.com/gnosis/gnosis-sdk-utils#readme",
+  "homepage": "https://github.com/gnosis/pm-scripts#readme",
   "devDependencies": {
     "ajv": "6.2.0",
     "babel-cli": "6.26.0",
