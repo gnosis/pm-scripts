@@ -95,7 +95,7 @@ it's recommended to use an ISO date format like *2018-03-27T16:20:11.698Z*.
 A text field defining which currency is holding the market's funds.
 
 ##### fee
-A text field defining the amount of fee held by the market creator. More info on the dedicated [pm-js documentation](https://pm-js.readthedocs.io/en/latest/events-oracles-and-markets.html#markets-and-automated-market-makers).
+A text field defining the amount of fee held by the market creator. More info on the dedicated [pm-js documentation](https://gnosis-pm-js.readthedocs.io/en/latest/events-oracles-and-markets.html#markets-and-automated-market-makers).
 
 ##### funding
 A text field representing how much funds to provid the market with.
@@ -108,7 +108,7 @@ Defines the prediction market type. You must strictly provide 'CATEGORICAL' or '
 or scalar market).
 
 ##### upperBound (scalar markets)
-A text field representing the upper bound of the predictions range. More info on [pm-js documentation](https://pm-js.readthedocs.io/en/latest/events-oracles-and-markets.html#events-with-scalar-outcomes).
+A text field representing the upper bound of the predictions range. More info on [pm-js documentation](https://gnosis-pm-js.readthedocs.io/en/latest/events-oracles-and-markets.html#events-with-scalar-outcomes).
 
 ##### lowerBound (scalar markets)
 A text field representing the lower bound of the predictions range.
