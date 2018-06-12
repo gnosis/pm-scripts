@@ -182,7 +182,8 @@ class ConfigValidator extends BaseValidator {
     await gnosisjsInstance.importContracts(olympiaArtifacts, {
       OlympiaToken: 'olympiaToken',
       AddressRegistry: 'olympiaAddressRegistry',
-      PlayToken: 'playToken'
+      PlayToken: 'playToken',
+      RewardClaimHandler: 'rewardClaimHandler'
     })
     newConfig.gnosisJS = gnosisjsInstance
     // Set new updated config
