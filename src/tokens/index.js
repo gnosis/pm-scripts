@@ -9,7 +9,7 @@ class Token {
     let result
 
     if (!amount || amount <= 0) {
-      throw new Error(`Cannot deposit inval amounts of Ether, got ${amount} ETH`)
+      throw new Error(`Cannot deposit invalid amounts of Ether, got ${amount} ETH`)
     }
 
     if (await isPlayMoneyToken(this._configInstance) == true) {
