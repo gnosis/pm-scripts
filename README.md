@@ -184,7 +184,7 @@ By default pm-scripts supports the CentralizedOracle only. Of course you would n
 You will now be able to create markets using the specified oracle.
 
 
-## Claim Reward
+## Claim Rewards
 
 In order to execute the Reward Claim feature the following configuration property must be added to the config.json file.
 It specifies the Reward Claim contract address, the levels property, which defines the respective amount of winnings for each winner in the top X (number of levels in the array) positions from the scoreboard.
