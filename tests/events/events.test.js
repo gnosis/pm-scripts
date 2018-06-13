@@ -7,7 +7,7 @@ import { configDir } from '../helpers/generics'
 import expect from 'expect.js'
 
 describe('Events', function () {
-  this.timeout(10000)
+  this.timeout(60000)
 
   it('Categorical Event', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
