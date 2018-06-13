@@ -45,6 +45,8 @@
     "@gnosis.pm/gnosis-core-contracts": "^1.0.3",
     "@gnosis.pm/gnosisjs": "^2.0.0",
     "@gnosis.pm/olympia-token": "^1.3.0",
+    "@gnosis.pm/pm-apollo-contracts": "^1.4.1",
+    "axios": "^0.18.0",
     "minimist": "1.2.0",
     "readline-sync": "1.4.9",
     "sleep": "5.1.1",

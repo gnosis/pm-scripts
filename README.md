@@ -12,6 +12,7 @@ pm-scripts is a command line tool which allows users to create and resolve predi
 - [Resolving markets](#resolving-markets)
 - [Fetch markets data](#fetch-markets-data-pm-trading-db-api)
 - [Using custom oracles](#using-custom-oracles)
+- [Claim Rewards](#claim-rewards)
 - [License](#license)
 
 ## Installation
@@ -182,6 +183,48 @@ By default pm-scripts supports the CentralizedOracle only. Of course you would n
 
 You will now be able to create markets using the specified oracle.
 
+
+## Claim Rewards
+
+In order to execute the Reward Claim feature the following configuration property must be added to the config.json file.
+It specifies the Reward Claim contract address, the levels property, which defines the respective amount of winnings for each winner in the top X (number of levels in the array) positions from the scoreboard.
+As the Reward Contract could be running on a different chain than the contracts, you have to specify the blockchain property as described below:
+
+```
+  "rewardClaimHandler": {
+    "blockchain": {
+      "protocol": "https",
+      "host": "node.rinkeby.gnosisdev.com",
+      "port": "443"
+    },
+    "address": "0x42331cbc7D15C876a38C1D3503fBAD0964a8D72b",
+    "duration": 86400,
+    "levels": [
+      { "value": 5, "minRank": 1, "maxRank": 1 },
+      { "value": 4, "minRank": 2, "maxRank": 2 },
+      { "value": 3, "minRank": 3, "maxRank": 3 },
+      { "value": 2, "minRank": 4, "maxRank": 4 },
+      { "value": 1, "minRank": 5, "maxRank": 5 },
+      { "value": 0.9, "minRank": 6, "maxRank": 7 },
+      { "value": 0.8, "minRank": 8, "maxRank": 9 },
+      { "value": 0.7, "minRank": 10, "maxRank": 11 },
+      { "value": 0.6, "minRank": 12, "maxRank": 13 },
+      { "value": 0.5, "minRank": 14, "maxRank": 15 },
+      { "value": 0.4, "minRank": 16, "maxRank": 17 },
+      { "value": 0.3, "minRank": 18, "maxRank": 19 },
+      { "value": 0.2, "minRank": 19, "maxRank": 34 },
+      { "value": 0.1, "minRank": 34, "maxRank": 100 }
+    ]
+  }
+ ```
+ 
+ To execute the Claim Reward just run the following command:
+ 
+ ```node lib/main.js claimrewards```
+ 
+ You can specify a custom config file path by running:
+ 
+ ```node lib/main.js claimrewards -f /path/to/config.json```
 
 ## License
 
