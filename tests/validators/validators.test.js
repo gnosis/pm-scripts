@@ -35,4 +35,14 @@ describe('Config Validator', () => {
     expect(baseValidator.objectPropertiesRequired(httpInvalidObject, requiredParams)).to.be(false)
     expect(baseValidator.objectPropertiesRequired(httpValidObject, requiredParams)).to.be(true)
   })
+  it('Test date validation', () => {
+    let invalidDate = '2018-12-31t12:00:00.000z'
+    expect(baseValidator.validDate(invalidDate)).to.be(false)
+    let validDate = '2018-10-30T00:00:00'
+    expect(baseValidator.validDate(validDate)).to.be(true)
+    validDate = '2018-12-31T18:00:00.000Z'
+    expect(baseValidator.validDate(validDate)).to.be(true)
+    validDate = '2018-10-30'
+    expect(baseValidator.validDate(validDate)).to.be(true)
+  })
 })
