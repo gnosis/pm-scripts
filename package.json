@@ -48,6 +48,7 @@
     "@gnosis.pm/pm-apollo-contracts": "^1.4.1",
     "axios": "^0.18.0",
     "minimist": "1.2.0",
+    "moment": "2.22.2",
     "readline-sync": "1.4.9",
     "sleep": "5.1.1",
     "truffle-hdwallet-provider": "0.0.3",
