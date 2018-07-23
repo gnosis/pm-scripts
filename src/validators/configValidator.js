@@ -13,8 +13,12 @@ class ConfigValidator extends BaseValidator {
     this._configPath = configPath
     this._fields = [
       {
-        'name': 'mnemonic',
+        'name': 'use',
         'validators': ['required']
+      },
+      {
+        'name': ['mnemonic', 'privateKey'],
+        'validators': ['oneIsRequired']
       },
       {
         'name': 'blockchain',
@@ -122,8 +126,8 @@ class ConfigValidator extends BaseValidator {
   * @throws ValidationError
   */
   async runValidators (field) {
-    for (let x = 0; x < field.validators.length; x++) {
-      let item = field.validators[x]
+    for (let field of this._fields) {
+      let item = field.validators
       if (!await this[item](this._config[field.name])) {
         throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
       }
@@ -206,8 +210,7 @@ class ConfigValidator extends BaseValidator {
     }
 
     // Do validation
-    for (let x = 0; x < this._fields.length; x++) {
-      const field = this._fields[x]
+    for (let field of this._fields) {
       // If 'setters' property is defined, let's iterate over it first
       if (field.setters) {
         for (let y = 0; y < field.setters.length; y++) {

@@ -43,6 +43,12 @@ class BaseValidator {
     return (this.required(value) && value.trim().length === ETH_ADDRESS_LENGTH)
   }
 
+  oneIsRequired (valuesArray) {
+    return !!valuesArray.filter(
+      value => value !== null && value !== undefined && value.trim().length > 0
+    ).length
+  }
+
   httpUrl (value) {
     const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
     const regexResult = value.match(webUrlRegex)

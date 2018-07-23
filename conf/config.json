@@ -1,14 +1,16 @@
 {
-  "mnemonic": "",
-  "account": "",
+  "mnemonic": "man math near range escape holiday monitor fat general legend garden resist",
+  "privateKey": "0x6c4ffa1cd9a6c3282dbc053d8e6cc0d4a15788912f53ee79fa3312209a0e6fd1",
+  "use": "mnemonic",
+  "account": "0x7ec8664a7be9c96a7e8b627f84789e5850887312",
   "blockchain": {
     "protocol": "https",
-    "host": "rinkeby.infura.io/gnosis/",
+    "host": "rinkeby.infura.io",
     "port": "443"
   },
   "gnosisDB": {
     "protocol": "https",
-    "host": "gnosisdb.rinkeby.gnosis.pm",
+    "host": "tradingdb.staging.gnosisdev.com",
     "port": "443"
   },
   "ipfs": {
@@ -17,5 +19,5 @@
     "port": "5001"
   },
   "gasPrice": "1000000000",
-  "collateralToken": ""
+  "collateralToken": "0x979861df79c7408553aaf20c01cfb3f81ccf9341"
 }
