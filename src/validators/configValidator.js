@@ -3,7 +3,7 @@ import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
 import { HD_WALLET_ACCOUNTS } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
-import Gnosis from '@gnosis.pm/gnosisjs'
+import Gnosis from '@gnosis.pm/pm-js'
 import olympiaArtifacts from '@gnosis.pm/olympia-token'
 import fs from 'fs'
 

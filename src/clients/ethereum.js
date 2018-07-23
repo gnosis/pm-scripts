@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import HDWalletProvider from 'truffle-hdwallet-provider-privkey'
-import { promisify } from '@gnosis.pm/gnosisjs'
+import { promisify } from '@gnosis.pm/pm-js'
+
 
 class Client {
   constructor (mnemonic, providerUrl, numAccounts = 1) {

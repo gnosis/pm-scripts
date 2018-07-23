@@ -1,7 +1,7 @@
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
 import { logInfo, logSuccess } from '../utils/log'
 import { isPlayMoneyToken, getPlayMoneyTokenInstance } from '../utils/tokens'
-import { promisify } from '@gnosis.pm/gnosisjs'
+import { promisify } from '@gnosis.pm/pm-js'
 import sleep from 'sleep'
 
 class Market {

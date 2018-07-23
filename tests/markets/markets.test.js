@@ -9,7 +9,7 @@ import Token from '../../src/tokens'
 import expect from 'expect.js'
 
 describe('Markets', function () {
-  this.timeout(10000)
+  this.timeout(60000)
   it('Categorical Market', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
     await validator.isValid()

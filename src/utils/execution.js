@@ -15,6 +15,7 @@ import Token from './../tokens'
 import Market from './../markets'
 import MarketValidator from './../validators/marketValidator'
 import ConfigValidator from './../validators/configValidator'
+import { claimRewards } from './rewards'
 import FileWriter from './fileWriter'
 import Client from './../clients/ethereum'
 import readlineSync from 'readline-sync'
@@ -196,6 +197,8 @@ const processArgs = argv => {
   let configPath = DEFAULT_CONFIG_FILE_PATH
   let marketPath = DEFAULT_MARKET_FILE_PATH
   let amountOfTokens
+  let parsedArgs
+
   // Arguments check
   if (argv.length === 2) {
     logWarn('Running SDK Utils with default parameters')
@@ -232,13 +235,21 @@ const processArgs = argv => {
     } else if (args.w) {
       logWarn('Invalid -w parameter, skipping tokens wrapping step')
     }
+   
+    parsedArgs = {
+      configPath,
+      marketPath,
+      amountOfTokens
+    }
+  
+    // Add claimrewards manually to the returning args
+    if (argv.indexOf('claimrewards') > -1) {
+      parsedArgs['claimrewards'] = true
+    }
+
   }
 
-  return {
-    configPath,
-    marketPath,
-    amountOfTokens
-  }
+  return parsedArgs
 }
 
 /**
@@ -377,28 +388,35 @@ const executor = async (args, executionType, steps) => {
     }
   }
 
-  try {
-    for (let x in marketFileCopy) {
-      let currentMarket = marketFileCopy[x]
-      step = getMarketStep(currentMarket, executionType)
-      let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
-      marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
+  if (args.claimrewards && args.claimrewards === true) {
+    // Do claim rewards
+    await claimRewards(configInstance)
+  } else {
+
+    try {
+      for (let x in marketFileCopy) {
+        let currentMarket = marketFileCopy[x]
+        step = getMarketStep(currentMarket, executionType)
+        let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
+        marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
+      }
+      logInfo(`${executionType} done, writing updates to ${args.marketPath}`)
+    } catch (error) {
+      // Error logged to console by function raising the error
+      logWarn('Writing updates before aborting...')
+      abort = true
+    } finally {
+      fileWriter.setFilePath(args.marketPath)
+      fileWriter.setData(marketFileCopy)
+      fileWriter.write()
+      if (abort) {
+        logWarn('Updates written successfully, aborting')
+        process.exit(1)
+      } else {
+        logSuccess(`Updates written successfully to ${args.marketPath}`)
+      }
     }
-    logInfo(`${executionType} done, writing updates to ${args.marketPath}`)
-  } catch (error) {
-    // Error logged to console by function raising the error
-    logWarn('Writing updates before aborting...')
-    abort = true
-  } finally {
-    fileWriter.setFilePath(args.marketPath)
-    fileWriter.setData(marketFileCopy)
-    fileWriter.write()
-    if (abort) {
-      logWarn('Updates written successfully, aborting')
-      process.exit(1)
-    } else {
-      logSuccess(`Updates written successfully to ${args.marketPath}`)
-    }
+
   }
 }
 
@@ -408,6 +426,8 @@ const consoleHelper = () => {
   console.info('Other usage: npm run deploy -- <commands>')
   console.info('Resolution usage: node lib/main.js resolve <commands>')
   console.info('Other resolution usage: npm run resolve -- <commands>')
+  console.info('Claim rewards usage: node lib/main.js claimrewards')
+  console.info('Other claim rewards usage: npm run claimrewards')
   console.info('Commands:')
   console.info('-f\tabsolute path to your configuration file.')
   console.info('-m\tabsolute path to your markets file.')
