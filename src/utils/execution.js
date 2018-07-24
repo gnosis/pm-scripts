@@ -196,7 +196,7 @@ const resolveMarket = async (marketDescription, configInstance) => {
 */
 const isMarketResolved = async (marketDescription, configInstance) => {
   if (marketDescription.marketAddress) {
-    logInfo('Check market already resolved...')
+    logInfo(`Check if market ${marketDescription.marketAddress} was already resolved...`)
     const market = new Market(marketDescription, configInstance)
     return await market.isResolved()
   } else {
