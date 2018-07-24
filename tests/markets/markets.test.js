@@ -42,6 +42,9 @@ describe('Markets', function () {
     expect(marketAddress).to.be.a('string')
     expect(marketAddress.length).to.be(42)
     marketInfo = Object.assign(market.getData(), {winningOutcome: 1})
+    // Check market is not resolved
+    let isResolved = await market.isResolved()
+    expect(isResolved).to.be(false)
     await market.resolve()
     expect(market.getWinningOutcome()).to.be(1)
 
@@ -49,6 +52,9 @@ describe('Markets', function () {
     const marketInstance = await config.gnosisJS.contracts.Market.at(market.getAddress())
     const stage = await marketInstance.stage()
     expect(stage.toNumber()).to.be(2)
+    // Check market was resolved
+    isResolved = await market.isResolved()
+    expect(isResolved).to.be(true)
 
     // Try again to resolve, should raise an error
     let resolveError = null

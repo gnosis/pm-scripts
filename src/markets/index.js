@@ -130,6 +130,11 @@ class Market {
   async getStage () {
     return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
   }
+
+  async isResolved () {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._marketInfo.oracleAddress)
+    return oracle.isSet()
+  }
 }
 
 module.exports = Market
