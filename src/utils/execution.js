@@ -191,6 +191,33 @@ const resolveMarket = async (marketDescription, configInstance) => {
 }
 
 /**
+* Check if market was resolved.
+* Returns True if market resolved, False otherwise
+*/
+const isMarketResolved = async (marketDescription, configInstance) => {
+  if (marketDescription.marketAddress) {
+    logInfo('Check market already resolved...')
+    const market = new Market(marketDescription, configInstance)
+    return await market.isResolved()
+  } else {
+    return false
+  }
+
+}
+
+/**
+* Check if market was resolved.
+* Returns True if market resolved, False otherwise
+*/
+const isMarketFunded = async (marketDescription, configInstance) => {
+  logInfo('Check market already funded...')
+  const market = new Market(marketDescription, configInstance)
+  const stage = await market.getStage()
+
+  return (stage.toNumber() === MARKET_STAGES.funded)
+}
+
+/**
 * Validates input args and sets default values eventually
 */
 const processArgs = argv => {
@@ -202,6 +229,10 @@ const processArgs = argv => {
   // Arguments check
   if (argv.length === 2) {
     logWarn('Running SDK Utils with default parameters')
+    parsedArgs = {
+      configPath: DEFAULT_CONFIG_FILE_PATH,
+      marketPath: DEFAULT_MARKET_FILE_PATH
+    }
   } else {
     const args = minimist(argv)
     // Here we have to use argv instead of minimist
@@ -235,16 +266,24 @@ const processArgs = argv => {
     } else if (args.w) {
       logWarn('Invalid -w parameter, skipping tokens wrapping step')
     }
-   
+
     parsedArgs = {
       configPath,
       marketPath,
       amountOfTokens
     }
-  
+
     // Add claimrewards manually to the returning args
     if (argv.indexOf('claimrewards') > -1) {
       parsedArgs['claimrewards'] = true
+    }
+
+    // Check if user asked to skip confirmations when funding markets
+    if (argv.indexOf('-skip-fund-confirmation') > -1) {
+      logInfo('Asked to force funding all markets with no confirmation')
+      parsedArgs['skipFundConfirmation'] = true
+    } else {
+      parsedArgs['skipFundConfirmation'] = false
     }
 
   }
@@ -254,8 +293,9 @@ const processArgs = argv => {
 
 /**
 * Runs the execution process stack.
+* @params fundAllMarkets - if set to True force to fund all markets without asking for confirmation
 */
-const runProcessStack = async (configInstance, marketDescription, steps, step) => {
+const runProcessStack = async (configInstance, marketDescription, steps, step, skipFundConfirmation) => {
   // Validate market description
   const marketValidator = new MarketValidator(marketDescription)
   try {
@@ -265,19 +305,30 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
     process.exit(1)
   }
 
+  let isFunded, isResolved
+
+  // Check if the user is willing to resolve a market and if the market is already resolved
+  isResolved = await isMarketResolved(marketDescription, configInstance)
+
   for (let x in steps[step]) {
     //
     try {
       if (steps[step][x].name === 'fundMarket') {
-        // Check if the market was already funded
-        const market = new Market(marketDescription, configInstance)
-        const stage = await market.getStage()
-
-        if (stage.toNumber() === MARKET_STAGES.funded) {
+        if (isResolved) {
+          logInfo(`Market ${marketDescription.marketAddress} looks to be resolved, skipping fund step`)
           // skip
           continue
         }
-        if (!askConfirmation(`Do you wish to fund the market ${marketDescription.marketAddress}?`, false)) {
+
+        // Check if the market was already funded
+        isFunded = await isMarketFunded(marketDescription, configInstance)
+
+        if (isFunded) {
+          logInfo(`Market ${marketDescription.marketAddress} already funded, skipping fund step`)
+          // skip
+          continue
+        }
+        if (!skipFundConfirmation && !askConfirmation(`Do you wish to fund the market ${marketDescription.marketAddress}?`, false)) {
           // skip
           continue
         }
@@ -285,9 +336,14 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
 
       if (steps[step][x].name === 'resolveMarket') {
         if (marketDescription.winningOutcome !== undefined) {
-          const formattedOutcome = formatWinningOutcome(marketDescription)
-          if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
-            // skip
+          if (!isResolved) {
+            const formattedOutcome = formatWinningOutcome(marketDescription)
+            if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
+              // skip
+              continue
+            }
+          } else {
+            logInfo(`Market ${marketDescription.marketAddress} already resolved, skipping it`)
             continue
           }
         } else {
@@ -317,11 +373,13 @@ const runProcessStack = async (configInstance, marketDescription, steps, step) =
 * -c : configuration file path, default /conf/config.json
 * -m : market description file path, default /conf/market.json
 * -w : wrap amount of tokens into ether token
+* -skip-fund-confirmation: skips fund markets confirmation
 */
 const executor = async (args, executionType, steps) => {
   let marketFile, step
   let configInstance, configValidator, tokenInstance
   args = processArgs(args)
+
   // If the provided (or default) market file doesn't exist,
   // raise an error and abort
   if (fileExists(args.marketPath)) {
@@ -397,7 +455,7 @@ const executor = async (args, executionType, steps) => {
       for (let x in marketFileCopy) {
         let currentMarket = marketFileCopy[x]
         step = getMarketStep(currentMarket, executionType)
-        let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step)
+        let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step, args.skipFundConfirmation)
         marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
       }
       logInfo(`${executionType} done, writing updates to ${args.marketPath}`)
@@ -432,6 +490,7 @@ const consoleHelper = () => {
   console.info('-f\tabsolute path to your configuration file.')
   console.info('-m\tabsolute path to your markets file.')
   console.info('-w\tamount of collateral tokens to wrap')
+  console.info('-skip-fund-confirmation\tskip confirmations when funding markets from the market.json file')
   console.info('-h or -help\tGnosis SDK helper')
   console.info('-v or -version\tGnosis SDK version')
 }
