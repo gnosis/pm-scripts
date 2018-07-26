@@ -29,13 +29,14 @@ To install all the required software dependencies clone the project, go to the r
 
 ## Compilation
 
-There are two ways to use the library: by using pre-defined npm scripts or executing lib/main.js with node and passing the arguments. If you prefer the second way, you would have to compile the library:
+There are two ways to use the library: by using pre-defined npm scripts (deploy, resolve) or executing lib/main.js with node.js and passing the arguments. If you use first way, the library will be compiled before script execution, but if you prefer the second way, you would have to compile the library:
 
 Using predefined npm script:
 
 ```npm run build```
 
 Using babel:
+
 ```./node_modules/.bin/babel src -d lib```
 
 ## Supported chains
