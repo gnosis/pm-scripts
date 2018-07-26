@@ -1,5 +1,7 @@
 {
   "mnemonic": "",
+  "privateKey": "",
+  "useWallet": "",
   "account": "",
   "blockchain": {
     "protocol": "",

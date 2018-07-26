@@ -50,15 +50,15 @@ class BaseValidator {
       'MM/DD/YY',              // '10/25/06'
   ]
 
-  let isValid = false
-  for (let idx in validFormats) {
-    isValid = moment(value, validFormats[idx], true).isValid()
-    if (isValid) {
-      break
+    let isValid = false
+    for (let idx in validFormats) {
+      isValid = moment(value, validFormats[idx], true).isValid()
+      if (isValid) {
+        break
+      }
     }
+    return isValid
   }
-  return isValid
-}
 
   arrayRequired (value, minlength) {
     return (value !== undefined && value !== null && value.length >= minlength)

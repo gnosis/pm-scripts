@@ -42,7 +42,11 @@ const printTokenBalance = async configInstance => {
 * Prints out the current setted ethereum account and balance
 */
 const printAccountBalance = async configInstance => {
-  const client = new Client(configInstance.mnemonic, configInstance.blockchainUrl)
+  const client = new Client(
+    configInstance.credentialType,
+    configInstance.accountCredential,
+    configInstance.blockchainUrl
+  )
   const balance = (await client.getBalance(configInstance.account)) / 1e18
   logSuccess(`Your Ethereum address is ${configInstance.account}`)
   logSuccess(`Your account balance is ${balance} ETH`)

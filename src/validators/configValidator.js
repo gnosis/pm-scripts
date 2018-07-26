@@ -13,7 +13,7 @@ class ConfigValidator extends BaseValidator {
     this._configPath = configPath
     this._fields = [
       {
-        'name': 'use',
+        'name': 'useWallet',
         'validators': ['required']
       },
       {
@@ -83,7 +83,11 @@ class ConfigValidator extends BaseValidator {
     if (!providerUrl) {
       providerUrl = this.getProviderUrl()
     }
-    const client = new Client(this._config.mnemonic, providerUrl, 1)
+    const client = new Client(
+      this._config.credentialType,
+      this._config.accountCredential,
+      providerUrl
+    )
     return client
   }
 
@@ -243,7 +247,11 @@ class ConfigValidator extends BaseValidator {
   async hasBalance (account) {
     let balance
     const providerUrl = this.getProviderUrl()
-    const client = new Client(this._config.mnemonic, providerUrl, HD_WALLET_ACCOUNTS)
+    const client = new Client(
+      this._config.credentialType,
+      this._config.accountCredential,
+      providerUrl
+    )
 
     if (this.requiredEthAddress(account)) {
       balance = await client.getBalance(account)
