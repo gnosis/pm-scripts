@@ -34,7 +34,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create Market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, oracleAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()
@@ -89,7 +89,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, oracleAddress, fee: '1', funding: '1e18', currency: 'ETH', outcomeType: 'SCALAR'}, {gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()

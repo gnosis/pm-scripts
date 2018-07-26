@@ -198,7 +198,22 @@ const isMarketResolved = async (marketDescription, configInstance) => {
   if (marketDescription.marketAddress) {
     logInfo(`Check if market ${marketDescription.marketAddress} was already resolved...`)
     const market = new Market(marketDescription, configInstance)
-    return await market.isResolved()
+    const marketResolved = await market.isResolved()
+
+    let event
+    if (marketDescription.outcomeType === 'SCALAR') {
+      event = new ScalarEvent(marketDescription, configInstance)
+    } else {
+      event = new CategoricalEvent(marketDescription, configInstance)
+    }
+
+    const eventResolved = await event.isResolved()
+    
+    const oracle = new CentralizedOracle(marketDescription, configInstance)
+    const oracleResolved = await oracle.isResolved()
+
+    return (marketResolved && eventResolved && oracleResolved)
+
   } else {
     return false
   }
