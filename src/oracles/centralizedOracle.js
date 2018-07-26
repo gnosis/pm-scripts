@@ -3,7 +3,7 @@ class CentralizedOracle {
     this._eventDescription = eventDescription
     this._configInstance = configInstance
     this._ipfsHash = null
-    this._oracleAddress = null
+    this._oracleAddress = eventDescription.oracleAddress ? eventDescription.oracleAddress : null
   }
 
   async create () {
@@ -20,6 +20,16 @@ class CentralizedOracle {
 
   getIpfsHash () {
     return this._ipfsHash
+  }
+
+  async isResolved () {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
+    return await oracle.isOutcomeSet()
+  }
+
+  async resolve (outcome) {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
+    return await oracle.setOutcome(outcome)
   }
 }
 

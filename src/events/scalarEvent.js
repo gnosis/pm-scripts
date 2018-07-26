@@ -1,6 +1,10 @@
-class ScalarEvent {
+import BaseEvent from './baseEvent'
+
+class ScalarEvent extends BaseEvent {
   constructor (eventInfo, configInstance) {
+    super()
     this._eventInfo = Object.assign({}, eventInfo)
+    this._eventAddress = this._eventInfo.eventAddress
     Object.assign(
       this._eventInfo,
       {

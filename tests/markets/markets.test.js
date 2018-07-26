@@ -34,7 +34,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create Market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, oracleAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()
@@ -42,6 +42,9 @@ describe('Markets', function () {
     expect(marketAddress).to.be.a('string')
     expect(marketAddress.length).to.be(42)
     marketInfo = Object.assign(market.getData(), {winningOutcome: 1})
+    // Check market is not resolved
+    let isResolved = await market.isResolved()
+    expect(isResolved).to.be(false)
     await market.resolve()
     expect(market.getWinningOutcome()).to.be(1)
 
@@ -49,6 +52,9 @@ describe('Markets', function () {
     const marketInstance = await config.gnosisJS.contracts.Market.at(market.getAddress())
     const stage = await marketInstance.stage()
     expect(stage.toNumber()).to.be(2)
+    // Check market was resolved
+    isResolved = await market.isResolved()
+    expect(isResolved).to.be(true)
 
     // Try again to resolve, should raise an error
     let resolveError = null
@@ -83,7 +89,7 @@ describe('Markets', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     // Create market
-    let marketInfo = Object.assign(eventInfo, {eventAddress, fee: '1', funding: '1e18', currency: 'ETH'}, {gas: defaultGas})
+    let marketInfo = Object.assign(eventInfo, {eventAddress, oracleAddress, fee: '1', funding: '1e18', currency: 'ETH', outcomeType: 'SCALAR'}, {gas: defaultGas})
     const market = new Market(marketInfo, config)
     await market.create()
     await market.fund()

@@ -1,6 +1,9 @@
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
 import { logInfo, logSuccess } from '../utils/log'
 import { isPlayMoneyToken, getPlayMoneyTokenInstance } from '../utils/tokens'
+import CentralizedOracle from './../oracles/centralizedOracle'
+import CategoricalEvent from './../events/categoricalEvent'
+import ScalarEvent from './../events/scalarEvent'
 import { promisify } from '@gnosis.pm/pm-js'
 import sleep from 'sleep'
 
@@ -82,7 +85,7 @@ class Market {
   }
 
   async resolve () {
-    let oracle, outcomeSet
+    let oracle, outcomeSet, event, txReceipt
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
     if (stage.toNumber() === MARKET_STAGES.created) {
@@ -91,7 +94,74 @@ class Market {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CLOSED)`)
     } else {
       // Resolve market
-      await this._configInstance.gnosisJS.resolveEvent({event: this._marketInfo.event, outcome: this._marketInfo.winningOutcome})
+      // await this._configInstance.gnosisJS.resolveEvent({event: this._marketInfo.event, outcome: this._marketInfo.winningOutcome})
+      const web3 = this._configInstance.blockchainProvider.getWeb3()
+      // Resolve oracle
+      oracle = new CentralizedOracle(this._marketInfo, this._configInstance)
+      if (!(await oracle.isResolved())) {
+        logInfo('Setting outcome on the Oracle')
+        const oracleTxResponse = await oracle.resolve(this._marketInfo.winningOutcome)
+        logInfo(`Waiting for oracle setOutcome transaction to be mined, tx hash: ${oracleTxResponse.tx}`)
+
+        while (true) {
+          sleep.msleep(TX_LOOKUP_TIME)
+          txReceipt = await promisify(web3.eth.getTransactionReceipt)(oracleTxResponse.tx)
+          // the transaction receipt shall cointain the status property
+          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
+          if (!txReceipt) {
+            continue
+          } else if (txReceipt && txReceipt.status === 0) {
+            // handle error, transaction failed
+            throw new Error('Set outcome transaction has failed.')
+          } else if (txReceipt && txReceipt.status === 1) {
+            logInfo('Oracle setOutcome transaction was mined')
+            break
+          } else if (txReceipt && txReceipt.status === '0x0') {
+            throw new Error('Set outcome transaction has failed.')
+          } else if (txReceipt && txReceipt.status === '0x1') {
+            logInfo('Oracle setOutcome transaction was mined')
+            break
+          }
+        }
+      } else {
+        logInfo('Oracle already resolved')
+      }
+      // Resolve event
+      if (this._marketInfo.outcomeType === 'SCALAR') {
+        event = new ScalarEvent(this._marketInfo, this._configInstance)
+      } else {
+        event = new CategoricalEvent(this._marketInfo, this._configInstance)
+      }
+
+      if (!(await event.isResolved())) {
+        logInfo('Setting outcome on the Event')
+        const eventTxResponse = await event.resolve()
+        logInfo(`Waiting for event setOutcome transaction to be mined, tx hash: ${eventTxResponse.tx}`)
+
+        while (true) {
+          sleep.msleep(TX_LOOKUP_TIME)
+          txReceipt = await promisify(web3.eth.getTransactionReceipt)(eventTxResponse.tx)
+          // the transaction receipt shall cointain the status property
+          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
+          if (!txReceipt) {
+            continue
+          } else if (txReceipt && txReceipt.status === 0) {
+            // handle error, transaction failed
+            throw new Error('Set outcome transaction has failed.')
+          } else if (txReceipt && txReceipt.status === 1) {
+            logInfo('Event setOutcome transaction was mined')
+            break
+          } else if (txReceipt && txReceipt.status === '0x0') {
+            throw new Error('Set outcome transaction has failed.')
+          } else if (txReceipt && txReceipt.status === '0x1') {
+            logInfo('Event setOutcome transaction was mined')
+            break
+          }
+        }
+      } else {
+        logInfo('Event already resolved')
+      }
+
       await market.close() // this._configInstance.gnosisJS.contracts.Market.close()
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)
@@ -129,6 +199,11 @@ class Market {
 
   async getStage () {
     return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
+  }
+
+  async isResolved () {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._marketInfo.oracleAddress)
+    return oracle.isSet()
   }
 }
 

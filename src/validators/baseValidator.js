@@ -26,10 +26,8 @@ class BaseValidator {
       date = value
     }
 
-    const futureDate = new Date()
-    futureDate.setDate(futureDate.getDate() + 1)
-    futureDate.setHours(0, 0, 0, 0)
-    return (date >= futureDate)
+    const currentDate = new Date()
+    return (date >= currentDate)
   }
 
   validDate (value) {
