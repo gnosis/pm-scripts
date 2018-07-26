@@ -5,6 +5,7 @@ pm-scripts is a command line tool which allows users to create and resolve predi
 ## Index of contents
 
 - [Installation](#installation)
+- [Compiling the library](#compilation)
 - [Supported chains](#supported-chains)
 - [Configuration](#configuration)
 - [Tournament operators](#tournament-operators)
@@ -25,6 +26,18 @@ pm-scripts should work for any OS. It has the following system requirements:
 To install all the required software dependencies clone the project, go to the root folder and run:
 
 ```npm install```
+
+## Compilation
+
+There are two ways to use the library: by using pre-defined npm scripts (deploy, resolve) or executing lib/main.js with node.js and passing the arguments. If you use first way, the library will be compiled before script execution, but if you prefer the second way, you would have to compile the library:
+
+Using predefined npm script:
+
+```npm run build```
+
+Using babel:
+
+```./node_modules/.bin/babel src -d lib```
 
 ## Supported chains
 pm-scripts can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
