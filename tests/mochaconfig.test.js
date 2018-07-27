@@ -1,7 +1,7 @@
 import Client from '../src/clients/ethereum'
 
-const accountCredential = process.env.ACCOUNT_CREDENTIAL
-const credentialType = process.env.CREDENTIAL_TYPE
+const accountCredential = process.env.MNEMONIC
+const credentialType = 'mnemonic'
 const providerUrl = process.env.PROVIDER_URL
 const numAccounts = 1
 
@@ -9,7 +9,7 @@ let web3
 let snapId
 
 beforeEach(done => {
-  const client = new Client(credentialType, accountCredential, numAccounts)
+  const client = new Client(credentialType, accountCredential, providerUrl, numAccounts)
   web3 = client.getWeb3()
   web3.currentProvider.sendAsync({
     jsonrpc: '2.0',

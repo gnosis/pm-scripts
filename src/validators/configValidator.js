@@ -1,7 +1,6 @@
 import BaseValidator from './baseValidator'
 import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
-import { HD_WALLET_ACCOUNTS } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
 import Gnosis from '@gnosis.pm/pm-js'
 import olympiaArtifacts from '@gnosis.pm/olympia-token'
@@ -13,12 +12,8 @@ class ConfigValidator extends BaseValidator {
     this._configPath = configPath
     this._fields = [
       {
-        'name': 'useWallet',
-        'validators': ['required']
-      },
-      {
-        'name': ['mnemonic', 'privateKey'],
-        'validators': ['oneIsRequired']
+        'name': ['credentialType', 'accountCredential'],
+        'validators': ['validCredential']
       },
       {
         'name': 'blockchain',

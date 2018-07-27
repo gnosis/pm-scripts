@@ -1,5 +1,7 @@
+import moment from 'moment'
 import { ETH_ADDRESS_LENGTH } from '../utils/constants'
-let moment = require('moment')
+
+const secp256k1 = require('secp256k1')
 
 class BaseValidator {
   /**
@@ -63,27 +65,41 @@ class BaseValidator {
   }
 
   required (value) {
-    return (value !== null && value !== undefined && value.trim().length > 0)
+    if (Array.isArray(value)) {
+      return (
+        value.filter(item => item !== null && item !== undefined && item.trim().length > 0) ===
+        value.length
+      )
+    }
+
+    return value !== null && value !== undefined && value.trim().length > 0
   }
 
   requiredEthAddress (value) {
     return (this.required(value) && value.trim().length === ETH_ADDRESS_LENGTH)
   }
 
-  oneIsRequired (valuesArray) {
-    return !!valuesArray.filter(
-      value => value !== null && value !== undefined && value.trim().length > 0
-    ).length
-  }
-
   httpUrl (value) {
-    const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
+    const webUrlRegex = '(https?)://?[^s(["<,>]*.[^s[",><]*:[0-9]*'
     const regexResult = value.match(webUrlRegex)
-    return (this.required(value) && regexResult !== null && regexResult.length > 0)
+    return this.required(value) && regexResult !== null && regexResult.length > 0
   }
-
   httpObject (httpObj) {
     return (this.required(httpObj.protocol) && this.required(httpObj.host) && this.required(httpObj.port))
+  }
+
+  validPrivateKey (privateKey) {
+    return secp256k1.privateKeyVerify(privateKey)
+  }
+
+  validCredential ([credentialType, accountCredential]) {
+    if (credentialType === 'mnemonic') {
+      return accountCredential.trim().split(/\s+/g).length >= 12
+    } else if (credentialType === 'privateKey') {
+      return this.validPrivateKey(accountCredential)
+    }
+
+    return false
   }
 
   objectPropertiesRequired (obj, properties = []) {
@@ -104,4 +120,4 @@ class BaseValidator {
   }
 }
 
-module.exports = BaseValidator
+export default BaseValidator
