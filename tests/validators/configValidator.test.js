@@ -34,9 +34,9 @@ describe('Config Validator', function () {
   // })
   it('Validate URL Regex', () => {
     const testRegex = value => {
-      const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
+      const webUrlRegex = '(https?)://?[^s(["<,>]*.[^s[",><]*:[0-9]*'
       const regexResult = value.match(webUrlRegex)
-      return (regexResult !== null && regexResult.length > 0)
+      return regexResult !== null && regexResult.length > 0
     }
 
     const url1 = 'http://'
