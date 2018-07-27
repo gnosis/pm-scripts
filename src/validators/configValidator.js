@@ -125,9 +125,12 @@ class ConfigValidator extends BaseValidator {
   * @throws ValidationError
   */
   async runValidators (field) {
-    for (let field of this._fields) {
-      let item = field.validators
-      if (!await this[item](this._config[field.name])) {
+    for (let validator of field.validators) {
+      let valuesToValidate = this._config[field.name]
+      if (Array.isArray(field.name)) {
+        valuesToValidate = field.name.map(key => this._config[key])
+      }
+      if (!await this[validator](valuesToValidate)) {
         throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
       }
     }

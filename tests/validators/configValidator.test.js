@@ -61,7 +61,7 @@ describe('Config Validator', function () {
   })
   it('Configuration normalization works', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
-    validator.load()
+    await validator.isValid()
     const config = validator.getConfig()
     await validator.normalize()
     const normConfig = validator.getConfig()
