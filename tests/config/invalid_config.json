@@ -1,6 +1,6 @@
 {
-  "mnemonic": "",
-  "privateKey": "",
+  "accountCredential": "",
+  "credentialType": "",
   "useWallet": "",
   "account": "",
   "blockchain": {

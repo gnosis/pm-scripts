@@ -55,7 +55,8 @@ Contains the main pm-scripts configuration and has the following structure:
 
 ```
 {
-  "mnemonic": "(REQUIRED) YOUR MNEMONIC PHRASE",
+  "accountCredential": "(REQUIRED) YOUR MNEMONIC PHRASE OR PRIVATE KEY",
+  "credentialType": "(REQUIRED) \"mnemonic\" or \"privateKey\"",
   "account": "YOUR ACCOUNT ADDRESS",
   "blockchain": {
     "protocol": "https",
@@ -77,7 +78,8 @@ Contains the main pm-scripts configuration and has the following structure:
 }
 ```
 
-* **mnemonic**, is your HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider));
+* **accountCredential**, This is your wallet credential. Can be either HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider)) or private key;
+* **credentialType**, is a type of credential you want to use to access your account, available values: `mnemonic, `privateKey`, defaults to `privateKey`;
 * **account**, is your ethereum address, all transactions will be sent from this address. If not provided, pm-scripts will calculate it from your mnemonic phrase;
 * **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
 * **pm-trading-db**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
