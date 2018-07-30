@@ -131,7 +131,7 @@ class ConfigValidator extends BaseValidator {
         valuesToValidate = field.name.map(key => this._config[key])
       }
       if (!await this[validator](valuesToValidate)) {
-        throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
+        throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${validator} validation. Got: ${valuesToValidate}`)
       }
     }
     return true

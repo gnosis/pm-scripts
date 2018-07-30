@@ -16,8 +16,19 @@ describe('Config Validator', function () {
       validator.isValid
     )
   })
+  it('Configuration credentials are not valid: mnemonic', async () => {
+    const validator = new ConfigValidator(configDir + 'invalid_credentials_mnemonic.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
+    await expect.throwsAsync(
+      validator.isValid
+    )
+  })
+  it('Configuration credentials are not valid: private key', async () => {
+
+  })
   it('Configuration collateral token is not valid', async () => {
-    const validator = new ConfigValidator(configDir + 'invalid_collateral_token_config.json')
+    const validator = new ConfigValidator(configDir + 'invalid_credentials_privateKey.json')
     await expect.throwsAsync(
       validator.isValid
     )
