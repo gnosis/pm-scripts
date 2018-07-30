@@ -4,12 +4,12 @@
   "account": "0x7ec8664a7be9c96a7e8b627f84789e5850887312",
   "blockchain": {
     "protocol": "https",
-    "host": "rinkeby.infura.io",
+    "host": "rinkeby.infura.io/gnosis/",
     "port": "443"
   },
   "gnosisDB": {
     "protocol": "https",
-    "host": "tradingdb.staging.gnosisdev.com",
+    "host": "gnosisdb.rinkeby.gnosis.pm",
     "port": "443"
   },
   "ipfs": {
@@ -18,5 +18,5 @@
     "port": "5001"
   },
   "gasPrice": "1000000000",
-  "collateralToken": "0x979861df79c7408553aaf20c01cfb3f81ccf9341"
+  "collateralToken": ""
 }

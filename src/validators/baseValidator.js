@@ -67,7 +67,7 @@ class BaseValidator {
   required (value) {
     if (Array.isArray(value)) {
       return (
-        value.filter(item => item !== null && item !== undefined && item.trim().length > 0) ===
+        value.filter(item => item !== null && item !== undefined && item.trim().length > 0).length ===
         value.length
       )
     }
@@ -121,4 +121,4 @@ class BaseValidator {
   }
 }
 
-export default BaseValidator
+module.exports = BaseValidator

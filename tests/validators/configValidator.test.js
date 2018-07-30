@@ -25,10 +25,17 @@ describe('Config Validator', function () {
     )
   })
   it('Configuration credentials are not valid: private key', async () => {
-
+    const validator = new ConfigValidator(configDir + 'invalid_credentials_privateKey.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
+    await expect.throwsAsync(
+      validator.isValid
+    )
   })
   it('Configuration collateral token is not valid', async () => {
-    const validator = new ConfigValidator(configDir + 'invalid_credentials_privateKey.json')
+    const validator = new ConfigValidator(configDir + 'invalid_collateral_token_config.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
     await expect.throwsAsync(
       validator.isValid
     )

@@ -1,10 +1,11 @@
-import BaseValidator from './baseValidator'
-import { ValidationError, SystemCheckError } from './exceptions'
-import Client from '../clients/ethereum'
-import { hasWriteDirectoryPerms } from '../utils/os'
 import Gnosis from '@gnosis.pm/pm-js'
 import olympiaArtifacts from '@gnosis.pm/olympia-token'
 import fs from 'fs'
+import BaseValidator from './baseValidator'
+import { ValidationError, SystemCheckError } from './exceptions'
+import Client from '../clients/ethereum'
+import { HD_WALLET_ACCOUNTS } from '../utils/constants'
+import { hasWriteDirectoryPerms } from '../utils/os'
 
 class ConfigValidator extends BaseValidator {
   constructor (configPath) {
@@ -248,7 +249,8 @@ class ConfigValidator extends BaseValidator {
     const client = new Client(
       this._config.credentialType,
       this._config.accountCredential,
-      providerUrl
+      providerUrl,
+      HD_WALLET_ACCOUNTS
     )
 
     if (this.requiredEthAddress(account)) {
