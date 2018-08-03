@@ -18,5 +18,6 @@ describe('CentralizedOracle', function () {
     expect(oracleAddress).not.to.be(undefined)
     expect(oracleAddress).to.be.a('string')
     expect(oracleAddress.length).to.be(42)
+    expect(await oracle.isResolved()).to.be(false)
   })
 })

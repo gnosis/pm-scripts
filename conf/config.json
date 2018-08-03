@@ -1,6 +1,7 @@
 {
-  "mnemonic": "",
-  "account": "",
+  "accountCredential": "man math near range escape holiday monitor fat general legend garden resist",
+  "credentialType": "mnemonic",
+  "account": "0x7ec8664a7be9c96a7e8b627f84789e5850887312",
   "blockchain": {
     "protocol": "https",
     "host": "rinkeby.infura.io/gnosis/",

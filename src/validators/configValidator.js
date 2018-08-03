@@ -1,11 +1,11 @@
+import Gnosis from '@gnosis.pm/pm-js'
+import olympiaArtifacts from '@gnosis.pm/olympia-token'
+import fs from 'fs'
 import BaseValidator from './baseValidator'
 import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
 import { HD_WALLET_ACCOUNTS } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
-import Gnosis from '@gnosis.pm/pm-js'
-import olympiaArtifacts from '@gnosis.pm/olympia-token'
-import fs from 'fs'
 
 class ConfigValidator extends BaseValidator {
   constructor (configPath) {
@@ -13,8 +13,8 @@ class ConfigValidator extends BaseValidator {
     this._configPath = configPath
     this._fields = [
       {
-        'name': 'mnemonic',
-        'validators': ['required']
+        'name': ['credentialType', 'accountCredential'],
+        'validators': ['validCredential']
       },
       {
         'name': 'blockchain',
@@ -79,7 +79,11 @@ class ConfigValidator extends BaseValidator {
     if (!providerUrl) {
       providerUrl = this.getProviderUrl()
     }
-    const client = new Client(this._config.mnemonic, providerUrl, 1)
+    const client = new Client(
+      this._config.credentialType,
+      this._config.accountCredential,
+      providerUrl
+    )
     return client
   }
 
@@ -122,10 +126,13 @@ class ConfigValidator extends BaseValidator {
   * @throws ValidationError
   */
   async runValidators (field) {
-    for (let x = 0; x < field.validators.length; x++) {
-      let item = field.validators[x]
-      if (!await this[item](this._config[field.name])) {
-        throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${item} validation. Got: ${this._config[field.name]}`)
+    for (let validator of field.validators) {
+      let valuesToValidate = this._config[field.name]
+      if (Array.isArray(field.name)) {
+        valuesToValidate = field.name.map(key => this._config[key])
+      }
+      if (!await this[validator](valuesToValidate)) {
+        throw new ValidationError(`JSON Configuration field ${field.name} didn't pass ${validator} validation. Got: ${valuesToValidate}`)
       }
     }
     return true
@@ -206,8 +213,7 @@ class ConfigValidator extends BaseValidator {
     }
 
     // Do validation
-    for (let x = 0; x < this._fields.length; x++) {
-      const field = this._fields[x]
+    for (let field of this._fields) {
       // If 'setters' property is defined, let's iterate over it first
       if (field.setters) {
         for (let y = 0; y < field.setters.length; y++) {
@@ -240,7 +246,12 @@ class ConfigValidator extends BaseValidator {
   async hasBalance (account) {
     let balance
     const providerUrl = this.getProviderUrl()
-    const client = new Client(this._config.mnemonic, providerUrl, HD_WALLET_ACCOUNTS)
+    const client = new Client(
+      this._config.credentialType,
+      this._config.accountCredential,
+      providerUrl,
+      HD_WALLET_ACCOUNTS
+    )
 
     if (this.requiredEthAddress(account)) {
       balance = await client.getBalance(account)

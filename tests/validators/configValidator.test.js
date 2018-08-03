@@ -16,8 +16,26 @@ describe('Config Validator', function () {
       validator.isValid
     )
   })
+  it('Configuration credentials are not valid: mnemonic', async () => {
+    const validator = new ConfigValidator(configDir + 'invalid_credentials_mnemonic.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
+    await expect.throwsAsync(
+      validator.isValid
+    )
+  })
+  it('Configuration credentials are not valid: private key', async () => {
+    const validator = new ConfigValidator(configDir + 'invalid_credentials_privateKey.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
+    await expect.throwsAsync(
+      validator.isValid
+    )
+  })
   it('Configuration collateral token is not valid', async () => {
     const validator = new ConfigValidator(configDir + 'invalid_collateral_token_config.json')
+    validator.load()
+    expect(validator.getConfig()).not.to.be(null)
     await expect.throwsAsync(
       validator.isValid
     )
@@ -34,9 +52,9 @@ describe('Config Validator', function () {
   // })
   it('Validate URL Regex', () => {
     const testRegex = value => {
-      const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
+      const webUrlRegex = '(https?)://?[^s(["<,>]*.[^s[",><]*:[0-9]*'
       const regexResult = value.match(webUrlRegex)
-      return (regexResult !== null && regexResult.length > 0)
+      return regexResult !== null && regexResult.length > 0
     }
 
     const url1 = 'http://'
@@ -61,7 +79,7 @@ describe('Config Validator', function () {
   })
   it('Configuration normalization works', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
-    validator.load()
+    await validator.isValid()
     const config = validator.getConfig()
     await validator.normalize()
     const normConfig = validator.getConfig()

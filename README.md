@@ -5,6 +5,7 @@ pm-scripts is a command line tool which allows users to create and resolve predi
 ## Index of contents
 
 - [Installation](#installation)
+- [Compiling the library](#compilation)
 - [Supported chains](#supported-chains)
 - [Configuration](#configuration)
 - [Tournament operators](#tournament-operators)
@@ -26,6 +27,18 @@ To install all the required software dependencies clone the project, go to the r
 
 ```npm install```
 
+## Compilation
+
+There are two ways to use the library: by using pre-defined npm scripts (deploy, resolve) or executing lib/main.js with node.js and passing the arguments. If you use first way, the library will be compiled before script execution, but if you prefer the second way, you would have to compile the library:
+
+Using predefined npm script:
+
+```npm run build```
+
+Using babel:
+
+```./node_modules/.bin/babel src -d lib```
+
 ## Supported chains
 pm-scripts can work with either Mainnet, Rinkeby, Kovan or Ropsten networks.
 [pm-trading-db](https://github.com/gnosis/pm-trading-db/) currently supports only Mainnet and Rinkeby networks.
@@ -42,7 +55,8 @@ Contains the main pm-scripts configuration and has the following structure:
 
 ```
 {
-  "mnemonic": "(REQUIRED) YOUR MNEMONIC PHRASE",
+  "accountCredential": "(REQUIRED) YOUR MNEMONIC PHRASE OR PRIVATE KEY",
+  "credentialType": "(REQUIRED) "mnemonic" or "privateKey"",
   "account": "YOUR ACCOUNT ADDRESS",
   "blockchain": {
     "protocol": "https",
@@ -64,7 +78,8 @@ Contains the main pm-scripts configuration and has the following structure:
 }
 ```
 
-* **mnemonic**, is your HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider));
+* **accountCredential**, This is your wallet credential. Can be either HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider)) or private key ([HD wallet private key repository](https://github.com/rhlsthrm/truffle-hdwallet-provider-privkey));
+* **credentialType**, is a type of credential you want to use to access your account, available values: `mnemonic`, `privateKey`, default is `privateKey`;
 * **account**, is your ethereum address, all transactions will be sent from this address. If not provided, pm-scripts will calculate it from your mnemonic phrase;
 * **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
 * **pm-trading-db**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);

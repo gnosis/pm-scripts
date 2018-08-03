@@ -1,6 +1,6 @@
 {
-  "mnemonic": "gnosis test rpc account ethereum blockchain devops database network software app server",
-  "account": "",
+  "accountCredential": "gnosis test rpc account ethereum blockchain devops database network software app server",
+  "credentialType": "mnemonic",
   "blockchain": {
     "protocol": "http",
     "host": "localhost",

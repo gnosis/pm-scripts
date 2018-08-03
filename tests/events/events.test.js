@@ -25,6 +25,7 @@ describe('Events', function () {
     const eventAddress = event.getAddress()
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
+    expect(await event.isResolved()).to.be(false)
   })
   it('Scalar Event', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
@@ -42,5 +43,6 @@ describe('Events', function () {
     const eventAddress = event.getAddress()
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
+    expect(await event.isResolved()).to.be(false)
   })
 })

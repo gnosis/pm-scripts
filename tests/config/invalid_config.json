@@ -1,5 +1,7 @@
 {
-  "mnemonic": "",
+  "accountCredential": "",
+  "credentialType": "",
+  "useWallet": "",
   "account": "",
   "blockchain": {
     "protocol": "",
