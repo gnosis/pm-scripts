@@ -51,7 +51,7 @@
     "minimist": "1.2.0",
     "moment": "2.22.2",
     "readline-sync": "1.4.9",
-    "secp256k1": "^3.5.0",
+    "secp256k1": "3.5.0",
     "sleep": "5.1.1",
     "truffle-hdwallet-provider": "0.0.6",
     "truffle-hdwallet-provider-privkey": "0.2.0",
