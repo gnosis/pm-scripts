@@ -1,12 +1,22 @@
 import Web3 from 'web3'
-import HDWalletProvider from 'truffle-hdwallet-provider'
+import HDWalletProviderMnemonic from 'truffle-hdwallet-provider'
+import HDWalletProviderPrivKey from 'truffle-hdwallet-provider-privkey'
 import { promisify } from '@gnosis.pm/pm-js'
 
 class Client {
-  constructor (mnemonic, providerUrl, numAccounts = 1) {
+  constructor (credentialType, walletCredential, providerUrl, numAccounts = 1) {
+    const useMnemonic = credentialType === 'mnemonic'
+
     this._providerUrl = providerUrl
-    this._provider = new HDWalletProvider(mnemonic, providerUrl, 0, numAccounts)
-    this._web3 = new Web3(this._provider)
+
+    if (useMnemonic) {
+      this._provider = new HDWalletProviderMnemonic(walletCredential, providerUrl, 0, numAccounts)
+      this._web3 = new Web3(this._provider)
+    } else {
+      const privateKey = walletCredential.replace('0x', '')
+      this._provider = new HDWalletProviderPrivKey(privateKey, providerUrl)
+      this._web3 = new Web3(this._provider.engine)
+    }
   }
 
   getWeb3 () {

@@ -1,5 +1,7 @@
+import moment from 'moment'
 import { ETH_ADDRESS_LENGTH } from '../utils/constants'
-let moment = require('moment')
+
+const secp256k1 = require('secp256k1')
 
 class BaseValidator {
   /**
@@ -48,22 +50,29 @@ class BaseValidator {
       'MM/DD/YY',              // '10/25/06'
   ]
 
-  let isValid = false
-  for (let idx in validFormats) {
-    isValid = moment(value, validFormats[idx], true).isValid()
-    if (isValid) {
-      break
+    let isValid = false
+    for (let idx in validFormats) {
+      isValid = moment(value, validFormats[idx], true).isValid()
+      if (isValid) {
+        break
+      }
     }
+    return isValid
   }
-  return isValid
-}
 
   arrayRequired (value, minlength) {
     return (value !== undefined && value !== null && value.length >= minlength)
   }
 
   required (value) {
-    return (value !== null && value !== undefined && value.trim().length > 0)
+    if (Array.isArray(value)) {
+      return (
+        value.filter(item => item !== null && item !== undefined && item.trim().length > 0).length ===
+        value.length
+      )
+    }
+
+    return value !== null && value !== undefined && value.trim().length > 0
   }
 
   requiredEthAddress (value) {
@@ -71,13 +80,27 @@ class BaseValidator {
   }
 
   httpUrl (value) {
-    const webUrlRegex = '(https?):\/\/?[^\s(["<,>]*\.[^\s[",><]*:[0-9]*'
+    const webUrlRegex = '(https?)://?[^s(["<,>]*.[^s[",><]*:[0-9]*'
     const regexResult = value.match(webUrlRegex)
-    return (this.required(value) && regexResult !== null && regexResult.length > 0)
+    return this.required(value) && regexResult !== null && regexResult.length > 0
   }
 
   httpObject (httpObj) {
     return (this.required(httpObj.protocol) && this.required(httpObj.host) && this.required(httpObj.port))
+  }
+
+  validPrivateKey (privateKey) {
+    return secp256k1.privateKeyVerify(Buffer.from(privateKey, 'hex'))
+  }
+
+  validCredential ([credentialType, accountCredential]) {
+    if (credentialType === 'mnemonic') {
+      return accountCredential.trim().split(/\s+/g).length >= 12
+    } else if (credentialType === 'privateKey') {
+      return this.validPrivateKey(accountCredential)
+    }
+
+    return false
   }
 
   objectPropertiesRequired (obj, properties = []) {
