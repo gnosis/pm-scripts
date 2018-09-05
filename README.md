@@ -214,6 +214,7 @@ As the Reward Contract could be running on a different chain than the contracts,
     },
     "address": "0x42331cbc7D15C876a38C1D3503fBAD0964a8D72b",
     "duration": 86400,
+    "decimals": 18,
     "levels": [
       { "value": 5, "minRank": 1, "maxRank": 1 },
       { "value": 4, "minRank": 2, "maxRank": 2 },
