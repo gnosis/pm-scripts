@@ -50,6 +50,7 @@
     "@gnosis.pm/pm-contracts": "1.1.0",
     "@gnosis.pm/pm-js": "2.1.0",
     "axios": "0.18.0",
+    "ethereumjs-abi": "^0.6.5",
     "minimist": "1.2.0",
     "moment": "2.22.2",
     "readline-sync": "1.4.9",
