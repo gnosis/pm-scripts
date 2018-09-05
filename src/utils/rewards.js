@@ -1,6 +1,9 @@
 import axios from 'axios'
-import Client from './../clients/ethereum'
 import truffleContract from 'truffle-contract'
+import { BigNumber } from 'bignumber.js'
+import Client from './../clients/ethereum'
+import rewardClaimHandlerArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/RewardClaimHandler.json'
+import tokenArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/Token.json'
 
 const claimRewards = async configInstance => {
   try {
@@ -8,40 +11,53 @@ const claimRewards = async configInstance => {
       throw new Error('rewardClaimHandler is required')
     }
 
-    // Use another web3
-    const providerUrl = `${configInstance.rewardClaimHandler.blockchain.protocol}://${
-      configInstance.rewardClaimHandler.blockchain.host
-    }:${configInstance.rewardClaimHandler.blockchain.port}`
-    const client = new Client(
-      configInstance.credentialType,
-      configInstance.accountCredential,
-      providerUrl
-    )
+    const {
+      rewardClaimHandler: rewardClaimConfig,
+      gnosisDB,
+      credentialType,
+      accountCredential,
+      account,
+      decimals = 18
+    } = configInstance
 
-    const rewardClaimHandlerArtifact = require('@gnosis.pm/pm-apollo-contracts/build/contracts/RewardClaimHandler.json')
+    // Use another web3
+    const providerUrl = `${rewardClaimConfig.blockchain.protocol}://${
+      rewardClaimConfig.blockchain.host
+    }:${rewardClaimConfig.blockchain.port}`
+    const client = new Client(credentialType, accountCredential, providerUrl)
+
     const rewardContract = truffleContract(rewardClaimHandlerArtifact)
     rewardContract.setProvider(client.getProvider())
-    const rewardInstance = rewardContract.at(configInstance.rewardClaimHandler.address)
+    const rewardInstance = rewardContract.at(rewardClaimConfig.address)
 
     // Get token from the reward contract instance
     const tokenAddress = await rewardInstance.rewardToken()
 
     // Get scoreboard
-    const gnosisDB = configInstance.gnosisDB
     const gnosisDBUrl = `${gnosisDB.protocol}://${gnosisDB.host}:${gnosisDB.port}/api/scoreboard/`
+
     const scoreboardResult = await axios.get(gnosisDBUrl)
-    const filteredScoreboard = scoreboardResult.data.results.slice(
-      0,
-      configInstance.rewardClaimHandler.levels.length
-    )
+
+    const lastRewardedRank =
+      rewardClaimConfig.levels[rewardClaimConfig.levels.length - 1].maxRank - 1
+    const filteredScoreboard = scoreboardResult.data.results.slice(0, lastRewardedRank)
 
     // Get rewards
     let winnersAddresses = []
     let rewardAmounts = []
     filteredScoreboard.map((item, index) => {
       winnersAddresses.push(item.account)
-      rewardAmounts.push(configInstance.rewardClaimHandler.levels[index]['value'])
+      rewardAmounts.push(
+        rewardClaimConfig.levels.find(({ minRank, maxRank }) => {
+          const scoreboardPosition = index + 1
+          return scoreboardPosition >= minRank && scoreboardPosition <= maxRank
+        }).value
+      )
     })
+
+    const rewardAmountsWei = rewardAmounts.map(rewardAmount =>
+      new BigNumber(rewardAmount).times(new BigNumber(10).pow(decimals)).toString()
+    )
 
     // calculate totalAmount
     const totalAmount = rewardAmounts.reduce((a, b) => a + b)
@@ -49,23 +65,23 @@ const claimRewards = async configInstance => {
     // Approve reward token
     await approve(
       client.getProvider(),
-      configInstance.account,
+      account,
       tokenAddress,
-      configInstance.rewardClaimHandler.address,
-      totalAmount
+      rewardClaimConfig.address,
+      new BigNumber(totalAmount).times(new BigNumber(10).pow(decimals)).toString()
     )
 
     // function registerRewards(address[] _winners, uint[] _rewardAmounts, uint duration)
     const registerTx = await rewardInstance.registerRewards(
       winnersAddresses,
-      rewardAmounts,
-      configInstance.rewardClaimHandler.duration,
-      { from: configInstance.account, gas: 200000 }
+      rewardAmountsWei,
+      rewardClaimConfig.duration,
+      { from: account, gas: 2000000 }
     )
 
     if (
-      (registerTx.receipt && registerTx.receipt.status == '0x0') ||
-      (registerTx.receipt && registerTx.receipt.status == 0)
+      (registerTx.receipt && registerTx.receipt.status === '0x0') ||
+      (registerTx.receipt && registerTx.receipt.status === 0)
     ) {
       throw new Error('Reward Claim transaction failed')
     }
@@ -92,7 +108,6 @@ const approve = async (provider, sender, tokenAddress, rewardClaimAddress, amoun
   }
 
   try {
-    const tokenArtifact = require('@gnosis.pm/pm-apollo-contracts/build/contracts/Token.json')
     const tokenContract = truffleContract(tokenArtifact)
     tokenContract.setProvider(provider)
     const tokenInstance = tokenContract.at(tokenAddress)
@@ -101,8 +116,8 @@ const approve = async (provider, sender, tokenAddress, rewardClaimAddress, amoun
     result = await tokenInstance.approve(rewardClaimAddress, amount, { from: sender })
 
     if (
-      (result.receipt && result.receipt.status == '0x0') ||
-      (result.receipt && result.receipt.status == 0)
+      (result.receipt && result.receipt.status === '0x0') ||
+      (result.receipt && result.receipt.status === 0)
     ) {
       throw new Error('Approve token transaction failed')
     }
