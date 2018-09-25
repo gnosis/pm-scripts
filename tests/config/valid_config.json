@@ -6,7 +6,7 @@
     "host": "localhost",
     "port": "8545"
   },
-  "gnosisDB": {
+  "tradingDB": {
     "protocol": "",
     "host": "",
     "port": ""

@@ -13,7 +13,7 @@ const claimRewards = async configInstance => {
 
     const {
       rewardClaimHandler: rewardClaimConfig,
-      gnosisDB,
+      tradingDB,
       credentialType,
       accountCredential,
       account,
@@ -34,9 +34,9 @@ const claimRewards = async configInstance => {
     const tokenAddress = await rewardInstance.rewardToken()
 
     // Get scoreboard
-    const gnosisDBUrl = `${gnosisDB.protocol}://${gnosisDB.host}:${gnosisDB.port}/api/scoreboard/`
+    const tradingDBUrl = `${tradingDB.protocol}://${tradingDB.host}:${tradingDB.port}/api/scoreboard/`
 
-    const scoreboardResult = await axios.get(gnosisDBUrl)
+    const scoreboardResult = await axios.get(tradingDBUrl)
 
     const lastRewardedRank =
       rewardClaimConfig.levels[rewardClaimConfig.levels.length - 1].maxRank - 1
