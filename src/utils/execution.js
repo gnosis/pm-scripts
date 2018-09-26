@@ -491,6 +491,7 @@ const executor = async (args, executionType, steps) => {
         process.exit(1)
       } else {
         logSuccess(`Updates written successfully to ${args.marketPath}`)
+        process.exit(0)
       }
     }
 
