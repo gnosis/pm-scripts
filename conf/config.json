@@ -7,9 +7,9 @@
     "host": "rinkeby.infura.io/gnosis/",
     "port": "443"
   },
-  "gnosisDB": {
+  "pm-trading-db": {
     "protocol": "https",
-    "host": "gnosisdb.rinkeby.gnosis.pm",
+    "host": "tradingdb.rinkeby.gnosis.pm",
     "port": "443"
   },
   "ipfs": {

@@ -65,7 +65,7 @@ Contains the main pm-scripts configuration and has the following structure:
   },
   "tradingDB": {
     "protocol": "https",
-    "host": "tradingdb.rinkeby.gnosisdev.com",
+    "host": "tradingdb.rinkeby.gnosis.pm",
     "port": "443"
   },
   "ipfs": {
