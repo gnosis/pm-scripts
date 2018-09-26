@@ -39,9 +39,9 @@ class ConfigValidator extends BaseValidator {
     ]
 
     this._defaults = {
-      'gnosisDB': {
+      'tradingDB': {
         'protocol': 'https',
-        'host': 'gnosisdb.rinkeby.gnosis.pm',
+        'host': 'tradingdb.rinkeby.gnosis.pm',
         'port': 443
       },
       'ipfs': {
@@ -91,12 +91,12 @@ class ConfigValidator extends BaseValidator {
     return `${this._config.blockchain.protocol}://${this._config.blockchain.host}:${this._config.blockchain.port}`
   }
 
-  getGnosisDBUrl () {
-    if (!this.objectPropertiesRequired(this._config.gnosisDB, ['protocol', 'host', 'port'])) {
+  getTradingDBUrl () {
+    if (!this.objectPropertiesRequired(this._config.tradingDB, ['protocol', 'host', 'port'])) {
       // use default
-      return `${this._defaults.gnosisDB.protocol}://${this._defaults.gnosisDB.host}:${this._defaults.gnosisDB.port}`
+      return `${this._defaults.tradingDB.protocol}://${this._defaults.tradingDB.host}:${this._defaults.tradingDB.port}`
     } else {
-      return `${this._config.gnosisDB.protocol}://${this._config.gnosisDB.host}:${this._config.gnosisDB.port}`
+      return `${this._config.tradingDB.protocol}://${this._config.tradingDB.host}:${this._config.tradingDB.port}`
     }
   }
 
@@ -161,9 +161,9 @@ class ConfigValidator extends BaseValidator {
   /**
   * Normalizes the configuration.
   * Converts addresses to lowercase
-  * Set blockchainUrl, blockchainProvider, gnosisDBUrl, ipfsUrl
+  * Set blockchainUrl, blockchainProvider, tradingDBUrl, ipfsUrl
   * Set GnosisJS instance
-  * Keep blockchain, gnosisdb and ipfs objects
+  * Keep blockchain, tradingdb and ipfs objects
   * @return normalized configuration
   */
   async normalize () {
@@ -172,7 +172,7 @@ class ConfigValidator extends BaseValidator {
     newConfig.account = newConfig.account.toLowerCase()
     newConfig.blockchainProvider = client
     newConfig.blockchainUrl = this.getProviderUrl()
-    newConfig.gnosisDBUrl = this.getGnosisDBUrl()
+    newConfig.tradingDBUrl = this.getTradingDBUrl()
     newConfig.ipfs = this.getIpfsObject()
     newConfig.ipfsUrl = this.getIPFSUrl()
     newConfig.collateralToken = newConfig.collateralToken.toLowerCase()
@@ -180,7 +180,7 @@ class ConfigValidator extends BaseValidator {
     const gnosisOptions = {
       ethereum: client.getProvider(),
       ipfs: newConfig.ipfs,
-      gnosisdb: newConfig.gnosisDBUrl,
+      tradingDB: newConfig.tradingDBUrl,
       defaultAccount: newConfig.account
     }
 
