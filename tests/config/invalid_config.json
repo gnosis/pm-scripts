@@ -8,7 +8,7 @@
     "host": "",
     "port": ""
   },
-  "gnosisDB": {
+  "tradingDB": {
     "protocol": "",
     "host": "",
     "port": ""

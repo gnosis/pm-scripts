@@ -2,4 +2,4 @@ language: node_js
 node_js:
 - '9'
 install:
-- rm -rf node_modules && npm install -g truffle@3.4.11 npm@latest && npm ci -q
+- rm -rf node_modules && npm install -g truffle@4.1.0 npm@latest && npm ci -q

@@ -63,7 +63,7 @@ Contains the main pm-scripts configuration and has the following structure:
     "host": "rinkeby.infura.io/gnosis/",
     "port": "443"
   },
-  "pm-trading-db": {
+  "tradingDB": {
     "protocol": "https",
     "host": "tradingdb.rinkeby.gnosis.pm",
     "port": "443"
@@ -82,7 +82,7 @@ Contains the main pm-scripts configuration and has the following structure:
 * **credentialType**, is a type of credential you want to use to access your account, available values: `mnemonic`, `privateKey`, default is `privateKey`;
 * **account**, is your ethereum address, all transactions will be sent from this address. If not provided, pm-scripts will calculate it from your mnemonic phrase;
 * **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
-* **pm-trading-db**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
+* **tradingDB**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
 * **ipfs**, sets the IPFS node pm-scripts should send transactions to (https://ipfs.infura.io:5001 by default);
 * **gasPrice**, the desired gasPrice
 * **collateralToken**, the Collateral Token contract's address:
@@ -214,6 +214,7 @@ As the Reward Contract could be running on a different chain than the contracts,
     },
     "address": "0x42331cbc7D15C876a38C1D3503fBAD0964a8D72b",
     "duration": 86400,
+    "decimals": 18,
     "levels": [
       { "value": 5, "minRank": 1, "maxRank": 1 },
       { "value": 4, "minRank": 2, "maxRank": 2 },

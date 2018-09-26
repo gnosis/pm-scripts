@@ -33,7 +33,7 @@ const printTokenBalance = async configInstance => {
   let message = `Your current collateral token balance is ${balance} ${tokenSymbol} (${tokenName})`
 
   if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
-    message += `, will wrap ${configInstance.amountOfTokens / 1e18} tokens more`
+    message += `, will wrap ${configInstance.amountOfTokens / 1e18} ${tokenSymbol} (${tokenName}) more`
   }
   logSuccess(message)
 }
@@ -134,7 +134,7 @@ const createMarket = async (marketDescription, configInstance) => {
   const market = new Market(marketDescription, configInstance)
   await market.create()
   marketDescription.marketAddress = market.getAddress()
-  logInfo(`Market with address ${marketDescription.marketAddress} created successfully, check it out: ${configInstance.gnosisDBUrl}/api/markets/${marketDescription.marketAddress}`)
+  logInfo(`Market with address ${marketDescription.marketAddress} created successfully, check it out: ${configInstance.tradingDBUrl}/api/markets/${marketDescription.marketAddress}`)
   return marketDescription
 }
 
@@ -491,6 +491,7 @@ const executor = async (args, executionType, steps) => {
         process.exit(1)
       } else {
         logSuccess(`Updates written successfully to ${args.marketPath}`)
+        process.exit(0)
       }
     }
 
