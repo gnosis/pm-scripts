@@ -6,6 +6,7 @@
   "scripts": {
     "deploy": "npm run build && node lib/main.js deploy",
     "resolve": "npm run build && node lib/main.js resolve",
+    "claimrewards": "npm run build && node lib/main.js claimrewards",
     "build": "./node_modules/.bin/babel src -d lib",
     "test": "PROVIDER_URL='http://localhost:8545' sh testRunner.sh"
   },
@@ -30,7 +31,7 @@
     "babel-plugin-transform-runtime": "6.23.0",
     "babel-preset-env": "1.6.1",
     "babel-register": "6.26.0",
-    "bignumber.js": "2.0.7",
+    "bignumber.js": "^7.2.1",
     "eslint": "4.18.1",
     "eslint-config-standard": "11.0.0",
     "eslint-plugin-import": "2.9.0",

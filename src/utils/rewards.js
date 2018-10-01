@@ -1,6 +1,6 @@
 import axios from 'axios'
 import truffleContract from 'truffle-contract'
-import { BigNumber } from 'bignumber.js'
+import { BigNumber } from 'bignumber.js/bignumber.js';
 import Client from './../clients/ethereum'
 import rewardClaimHandlerArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/RewardClaimHandler.json'
 import tokenArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/Token.json'
@@ -76,7 +76,7 @@ const claimRewards = async configInstance => {
       winnersAddresses,
       rewardAmountsWei,
       rewardClaimConfig.duration,
-      { from: account, gas: 2000000 }
+      { from: account, gas: 5000000 }
     )
 
     if (
