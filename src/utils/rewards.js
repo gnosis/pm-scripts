@@ -17,6 +17,7 @@ const claimRewards = async configInstance => {
       credentialType,
       accountCredential,
       account,
+      gasPrice,
       decimals = 18
     } = configInstance
 
@@ -76,7 +77,7 @@ const claimRewards = async configInstance => {
       winnersAddresses,
       rewardAmountsWei,
       rewardClaimConfig.duration,
-      { from: account, gas: 5000000 }
+      { from: account, gas: 5000000, gasPrice }
     )
 
     if (
