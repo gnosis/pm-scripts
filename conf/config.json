@@ -18,5 +18,5 @@
     "port": "5001"
   },
   "gasPrice": "1000000000",
-  "collateralToken": ""
+  "collateralToken": "0xd19bce9f7693598a9fa1f94c548b20887a33f141"
 }
