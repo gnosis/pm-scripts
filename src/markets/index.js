@@ -162,7 +162,7 @@ class Market {
         logInfo('Event already resolved')
       }
 
-      await market.close() // this._configInstance.gnosisJS.contracts.Market.close()
+      await market.close({ gasPrice: this._configInstance.gasPrice }) // this._configInstance.gnosisJS.contracts.Market.close()
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)
       while (true) {
