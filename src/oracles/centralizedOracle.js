@@ -28,8 +28,9 @@ class CentralizedOracle {
   }
 
   async resolve (outcome) {
+    const gasPrice = this._configInstance.gasPrice
     const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
-    return await oracle.setOutcome(outcome)
+    return await oracle.setOutcome(outcome, { gasPrice })
   }
 }
 
