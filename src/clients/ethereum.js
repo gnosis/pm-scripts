@@ -19,6 +19,10 @@ class Client {
     }
   }
 
+  /**
+  * Getters
+  */
+
   getWeb3 () {
     return this._web3
   }

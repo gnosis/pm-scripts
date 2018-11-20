@@ -22,20 +22,26 @@ class Market {
     this._marketAddress = marketInfo.marketAddress || null
   }
 
+  /**
+  * Creates a market.
+  */
   async create () {
     try {
       const market = await this._configInstance.gnosisJS.createMarket(this._marketInfo)
       this._marketAddress = market.address
     } catch (error) {
-      console.log(error)
       throw error
     }
   }
 
+  /**
+  * Funds a Market, moves collateral token funds on the market.
+  */
   async fund () {
     let txReceipt
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     const collateralTokenInstance = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
+    const gasPrice = this._configInstance.gasPrice
 
     // Check if token is play money token
     if (await isPlayMoneyToken(this._configInstance)) {
@@ -50,7 +56,7 @@ class Market {
     await collateralTokenInstance.approve(this._marketAddress, this._marketInfo.funding)
 
     // // Fund market
-    const txResponse = await market.fund(this._marketInfo.funding)
+    const txResponse = await market.fund(this._marketInfo.funding, { gasPrice })
 
     // First transaction check
     if (txResponse.receipt && parseInt(txResponse.receipt.status) === 0) {
@@ -70,24 +76,25 @@ class Market {
       // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
       if (!txReceipt) {
         continue
-      } else if (txReceipt && txReceipt.status === 0) {
+      } else if (txReceipt && parseInt(txReceipt.status) === 0) {
         // handle error, transaction failed
         throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-      } else if (txReceipt && txReceipt.status === 1) {
-        break
-      } else if (txReceipt && txReceipt.status === '0x0') {
-        throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-      } else if (txReceipt && txReceipt.status === '0x1') {
+      } else if (txReceipt && parseInt(txReceipt.status) === 1) {
         break
       }
     }
     logInfo('Funding transaction was mined')
   }
 
+  /**
+  * Resolves a Market, sets the winning outcome on the Market's related Event and Oracle.
+  */
   async resolve () {
     let oracle, outcomeSet, event, txReceipt
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
+    const gasPrice = this._configInstance.gasPrice
+
     if (stage.toNumber() === MARKET_STAGES.created) {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CREATED)`)
     } else if (stage.toNumber() === MARKET_STAGES.closed) {
@@ -110,15 +117,10 @@ class Market {
           // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
           if (!txReceipt) {
             continue
-          } else if (txReceipt && txReceipt.status === 0) {
+          } else if (txReceipt && parseInt(txReceipt.status) === 0) {
             // handle error, transaction failed
             throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && txReceipt.status === 1) {
-            logInfo('Oracle setOutcome transaction was mined')
-            break
-          } else if (txReceipt && txReceipt.status === '0x0') {
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && txReceipt.status === '0x1') {
+          } else if (txReceipt && parseInt(txReceipt.status) === 1) {
             logInfo('Oracle setOutcome transaction was mined')
             break
           }
@@ -145,15 +147,10 @@ class Market {
           // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
           if (!txReceipt) {
             continue
-          } else if (txReceipt && txReceipt.status === 0) {
+          } else if (txReceipt && parseInt(txReceipt.status) === 0) {
             // handle error, transaction failed
             throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && txReceipt.status === 1) {
-            logInfo('Event setOutcome transaction was mined')
-            break
-          } else if (txReceipt && txReceipt.status === '0x0') {
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && txReceipt.status === '0x1') {
+          } else if (txReceipt && parseInt(txReceipt.status) === 1) {
             logInfo('Event setOutcome transaction was mined')
             break
           }
@@ -162,7 +159,9 @@ class Market {
         logInfo('Event already resolved')
       }
 
-      await market.close({ gasPrice: this._configInstance.gasPrice }) // this._configInstance.gnosisJS.contracts.Market.close()
+      // Close the market, so that it can't receive new trades
+      await market.close({ gasPrice })
+
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)
       while (true) {
@@ -180,6 +179,19 @@ class Market {
 
     this._winningOutcome = this._marketInfo.winningOutcome
   }
+
+  /**
+  * Returns True whether a market was resolved, meaning that the winning outcome
+  * is set on the Oracle.
+  */
+  async isResolved () {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._marketInfo.oracleAddress)
+    return oracle.isSet()
+  }
+
+  /**
+  * Getters/Setters
+  */
 
   setAddress (address) {
     this._marketAddress = address
@@ -199,11 +211,6 @@ class Market {
 
   async getStage () {
     return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
-  }
-
-  async isResolved () {
-    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._marketInfo.oracleAddress)
-    return oracle.isSet()
   }
 }
 

@@ -9,6 +9,9 @@ class Token {
     this._configInstance = configInstance
   }
 
+  /**
+  * Deposit/issue ETH into a specific wrapped token.
+  */
   async wrapTokens (amount) {
     let result
 
@@ -46,6 +49,9 @@ class Token {
     return result
   }
 
+  /**
+  * Returns the JSON representation of a Token, with relevant info.
+  */
   async getInfo () {
     const tokenContract = this._configInstance.gnosisJS.contracts.OlympiaToken.at(this._configInstance.collateralToken)
     const info = {}

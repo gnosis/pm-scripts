@@ -95,16 +95,21 @@ const getMarketStep = (marketDescription, executionType) => {
 }
 
 /**
-* Creates an oracle instance, updates the input market description.
+* Creates an oracle instance, updates the market description passed in input.
 */
 const createOracle = async (eventDescription, configInstance) => {
-  logInfo('Creating Centralized Oracle...')
   const oracle = new CentralizedOracle(eventDescription, configInstance)
-  await oracle.create()
-  eventDescription.oracleAddress = oracle.getAddress()
+
+  logInfo('Publishing Event Description to IPFS...')
+  await oracle.publishEventDescription()
   eventDescription.ipfsHash = oracle.getIpfsHash()
   logInfo(`Event Description saved to IPFS, check it out: ${configInstance.ipfsUrl}/api/v0/cat?stream-channels=true&arg=${eventDescription.ipfsHash}`)
+
+  logInfo('Creating Centralized Oracle...')
+  await oracle.create()
+  eventDescription.oracleAddress = oracle.getAddress()
   logInfo(`Centralized Oracle with address ${eventDescription.oracleAddress} created successfully`)
+
   return eventDescription
 }
 
@@ -212,7 +217,7 @@ const isMarketResolved = async (marketDescription, configInstance) => {
     }
 
     const eventResolved = await event.isResolved()
-    
+
     const oracle = new CentralizedOracle(marketDescription, configInstance)
     const oracleResolved = await oracle.isResolved()
 
@@ -436,6 +441,11 @@ const executor = async (args, executionType, steps) => {
 
   logSuccess('Your market file content:')
   logInfo(JSON.stringify(marketFile, undefined, 4))
+
+  // @TODO
+  logSuccess('Your configuration:')
+  logInfo('')
+
   // Display user tokens balance
   await printTokenBalance(configInstance)
   await printAccountBalance(configInstance)
@@ -447,7 +457,7 @@ const executor = async (args, executionType, steps) => {
   let abort = false
 
   // Start deploy process
-  logInfo(`Starting ${executionType}, it could take up to 1 minute...`)
+  logInfo(`Starting ${executionType}, it could take time...`)
 
   if (configInstance.wrapTokens) {
     // wrap tokens
