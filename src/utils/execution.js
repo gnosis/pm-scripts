@@ -22,6 +22,21 @@ import readlineSync from 'readline-sync'
 import minimist from 'minimist'
 
 /**
+* Prints out information about the configuration file content 
+* See ConfigValidator.normalize()
+*/
+const printConfiguration = (configuration) => {
+  logSuccess('Your configuration:')
+  logInfo(`>> Account: ${configuration.account}`)
+  logInfo(`>> Blockchain: ${configuration.blockchainUrl}`)
+  logInfo(`>> TradingDB: ${configuration.tradingDBUrl}`)
+  logInfo(`>> IPFS: ${configuration.ipfsUrl}`)
+  logInfo(`>> Gas Price: ${configuration.gasPrice}`)
+  logInfo(`>> Collateral Token: ${configuration.collateralToken}`)
+
+}
+
+/**
 * Prints out the token balance of the account defined in the configuration
 */
 const printTokenBalance = async configInstance => {
@@ -442,9 +457,7 @@ const executor = async (args, executionType, steps) => {
   logSuccess('Your market file content:')
   logInfo(JSON.stringify(marketFile, undefined, 4))
 
-  // @TODO
-  logSuccess('Your configuration:')
-  logInfo('')
+  printConfiguration(configValidator.getConfig())
 
   // Display user tokens balance
   await printTokenBalance(configInstance)
