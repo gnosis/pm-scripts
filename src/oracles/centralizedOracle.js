@@ -6,13 +6,42 @@ class CentralizedOracle {
     this._oracleAddress = eventDescription.oracleAddress ? eventDescription.oracleAddress : null
   }
 
+  /**
+  * Publishes an Event Description in JSON format to IPFS
+  */
+  async publishEventDescription () {
+    this._ipfsHash = await this._configInstance.gnosisJS.publishEventDescription(this._eventDescription)
+  }
+
+  /**
+  * Creates a Centralized Oracle
+  */
   async create () {
     const gasPrice = this._configInstance.gasPrice
-    const ipfsHash = await this._configInstance.gnosisJS.publishEventDescription(this._eventDescription)
-    const oracle = await this._configInstance.gnosisJS.createCentralizedOracle(ipfsHash, { gasPrice })
-    this._ipfsHash = ipfsHash
+    const oracle = await this._configInstance.gnosisJS.createCentralizedOracle(this._ipfsHash, { gasPrice })
     this._oracleAddress = oracle.address
   }
+
+  /**
+  * Returns True if the Outcome is set on the Oracle, False otherwise.
+  */
+  async isResolved () {
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
+    return await oracle.isOutcomeSet()
+  }
+
+  /**
+  * Resolves a Centralized Oracle, sets the winning outcome on the Oracle.
+  */
+  async resolve (outcome) {
+    const gasPrice = this._configInstance.gasPrice
+    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
+    return await oracle.setOutcome(outcome, { gasPrice })
+  }
+
+  /**
+  * Getters
+  */
 
   getAddress () {
     return this._oracleAddress
@@ -20,17 +49,6 @@ class CentralizedOracle {
 
   getIpfsHash () {
     return this._ipfsHash
-  }
-
-  async isResolved () {
-    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
-    return await oracle.isOutcomeSet()
-  }
-
-  async resolve (outcome) {
-    const gasPrice = this._configInstance.gasPrice
-    const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
-    return await oracle.setOutcome(outcome, { gasPrice })
   }
 }
 

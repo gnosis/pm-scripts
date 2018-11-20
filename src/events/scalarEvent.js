@@ -16,10 +16,17 @@ class ScalarEvent extends BaseEvent {
     this._configInstance = configInstance
   }
 
+  /**
+  * Creates a Scalar Event
+  */
   async create () {
     const event = await this._configInstance.gnosisJS.createScalarEvent(this._eventInfo)
     this._eventAddress = event.address
   }
+
+  /**
+  * Getters
+  */
 
   getAddress () {
     return this._eventAddress

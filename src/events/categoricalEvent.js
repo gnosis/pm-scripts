@@ -17,10 +17,17 @@ class CategoricalEvent extends BaseEvent {
     this._configInstance = configInstance
   }
 
+  /**
+  * Creates a Categorical Event
+  */
   async create () {
     const event = await this._configInstance.gnosisJS.createCategoricalEvent(this._eventInfo)
     this._eventAddress = event.address
   }
+
+  /**
+  * Getters
+  */
 
   getAddress () {
     return this._eventAddress

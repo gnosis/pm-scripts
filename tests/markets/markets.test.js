@@ -22,6 +22,7 @@ describe('Markets', function () {
     expect(wrappedTokens).to.be.an('object')
     // Create Oracle
     const oracle = new CentralizedOracle(categoricalEventDescription, config)
+    await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
     expect(oracleAddress).to.be.a('string')
@@ -77,6 +78,7 @@ describe('Markets', function () {
     expect(wrappedTokens).to.be.an('object')
     // Create oracle
     const oracle = new CentralizedOracle(scalarEventDescription, config)
+    await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
     expect(oracleAddress).to.be.a('string')
