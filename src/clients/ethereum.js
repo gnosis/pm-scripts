@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import HDWalletProviderMnemonic from 'truffle-hdwallet-provider'
-import HDWalletProviderPrivKey from 'truffle-hdwallet-provider-privkey'
+import HDWalletProvider from 'truffle-hdwallet-provider-privkey'
 import { promisify } from '@gnosis.pm/pm-js'
 
 class Client {
@@ -14,7 +14,9 @@ class Client {
       this._web3 = new Web3(this._provider)
     } else {
       const privateKey = walletCredential.replace('0x', '')
-      this._provider = new HDWalletProviderPrivKey(privateKey, providerUrl)
+      // truffle-hdwallet-provider-privkey 0.3.0 now requires to pass an array of
+      // private keys
+      this._provider = new HDWalletProvider([privateKey], providerUrl)
       this._web3 = new Web3(this._provider.engine)
     }
   }
