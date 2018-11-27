@@ -36,12 +36,13 @@ class Token {
     while (true) {
       sleep.msleep(TX_LOOKUP_TIME)
       txReceipt = await promisify(web3.eth.getTransactionReceipt)(result.tx)
+
       if (!txReceipt) {
         continue
-      } else if (txReceipt && parseInt(txReceipt.status) === 0) {
+      } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
         // handle error, transaction failed
         throw new Error('Ether wrapping transaction failed.')
-      } else if (txReceipt && parseInt(txReceipt.status) === 1) {
+      } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
         break
       }
     }
