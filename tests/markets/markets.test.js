@@ -16,7 +16,7 @@ describe('Markets', function () {
     await validator.normalize()
     const config = validator.getConfig()
     // Issue wrap tokens
-    config.collateralToken = config.gnosisJS.contracts.EtherToken.address
+    config.collateralToken = config.gnosisJS.contracts.WETH9.address
     const token = new Token(config)
     const wrappedTokens = await token.wrapTokens(1e18)
     expect(wrappedTokens).to.be.an('object')
@@ -72,7 +72,7 @@ describe('Markets', function () {
     await validator.normalize()
     const config = validator.getConfig()
     // Issue wrap tokens
-    config.collateralToken = config.gnosisJS.contracts.EtherToken.address
+    config.collateralToken = config.gnosisJS.contracts.WETH9.address
     const token = new Token(config)
     const wrappedTokens = await token.wrapTokens(1e18)
     expect(wrappedTokens).to.be.an('object')

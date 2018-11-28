@@ -40,7 +40,7 @@ class Market {
   async fund () {
     let txReceipt
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
+    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
     const gasPrice = this._configInstance.gasPrice
 
     // Check if token is play money token

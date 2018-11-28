@@ -27,7 +27,7 @@ class Token {
       const playTokenContract = this._configInstance.gnosisJS.contracts.OlympiaToken.at(this._configInstance.collateralToken)
       result = await playTokenContract.issue([this._configInstance.account], amount, { gasPrice })
     } else {
-      const etherTokenContract = this._configInstance.gnosisJS.contracts.EtherToken.at(this._configInstance.collateralToken)
+      const etherTokenContract = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
       result = await etherTokenContract.deposit({ value: amount, gasPrice })
     }
 
