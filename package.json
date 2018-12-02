@@ -49,7 +49,7 @@
     "@gnosis.pm/olympia-token": "1.3.0",
     "@gnosis.pm/pm-apollo-contracts": "1.4.1",
     "@gnosis.pm/pm-contracts": "1.1.0",
-    "@gnosis.pm/pm-js": "2.1.0",
+    "@gnosis.pm/pm-js": "git+https://github.com/giacomolicari/pm-js.git#feature/contract-creation-transaction-hash",
     "axios": "0.18.0",
     "ethereumjs-abi": "^0.6.5",
     "minimist": "1.2.0",

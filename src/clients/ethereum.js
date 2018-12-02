@@ -57,6 +57,13 @@ class Client {
     // return balance
     return promisify(this._web3.eth.getBalance)(address)
   }
+
+  /**
+  * Returns the transaction receipt
+  */
+  async getTransactionReceipt (transactionHash) {
+    return promisify(this._web3.eth.getTransactionReceipt)(transactionHash)
+  }
 }
 
 module.exports = Client

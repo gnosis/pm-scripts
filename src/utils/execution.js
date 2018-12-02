@@ -8,6 +8,7 @@ import {
 import { logSuccess, logInfo, logError, logWarn } from './log'
 import { readFile, fileExists } from './os'
 import { capitalizeFirstLetter } from './string'
+import { getTransactionCost } from './ethereum'
 import CentralizedOracle from './../oracles/centralizedOracle'
 import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
@@ -22,7 +23,7 @@ import readlineSync from 'readline-sync'
 import minimist from 'minimist'
 
 /**
-* Prints out information about the configuration file content 
+* Prints out information about the configuration file content
 * See ConfigValidator.normalize()
 */
 const printConfiguration = (configuration) => {
@@ -125,6 +126,14 @@ const createOracle = async (eventDescription, configInstance) => {
   eventDescription.oracleAddress = oracle.getAddress()
   logInfo(`Centralized Oracle with address ${eventDescription.oracleAddress} created successfully`)
 
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createOracle",
+    "cost": await getTransactionCost(oracle.getTransactionHash(), configInstance)
+  }
+  eventDescription.costs.push(transactionCost)
+  logInfo(`Oracle creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return eventDescription
 }
 
@@ -143,6 +152,15 @@ const createEvent = async (eventDescription, configInstance) => {
   await event.create()
   eventDescription.eventAddress = event.getAddress()
   logInfo(`${capitalizedEventType} Event with address ${eventDescription.eventAddress} created successfully`)
+
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createEvent",
+    "cost": await getTransactionCost(event.getTransactionHash(), configInstance)
+  }
+  eventDescription.costs.push(transactionCost)
+  logInfo(`Event creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return eventDescription
 }
 
@@ -155,6 +173,15 @@ const createMarket = async (marketDescription, configInstance) => {
   await market.create()
   marketDescription.marketAddress = market.getAddress()
   logInfo(`Market with address ${marketDescription.marketAddress} created successfully, check it out: ${configInstance.tradingDBUrl}/api/markets/${marketDescription.marketAddress}`)
+
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createMarket",
+    "cost": await getTransactionCost(market.getTransactionHash(), configInstance)
+  }
+  marketDescription.costs.push(transactionCost)
+  logInfo(`Market creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return marketDescription
 }
 
@@ -345,6 +372,10 @@ const runProcessStack = async (configInstance, marketDescription, steps, step, s
   }
 
   let isFunded, isResolved
+
+  if (!marketDescription.costs) {
+    marketDescription.costs = []
+  }
 
   // Check if the user is willing to resolve a market and if the market is already resolved
   isResolved = await isMarketResolved(marketDescription, configInstance)

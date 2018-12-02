@@ -20,6 +20,7 @@ class Market {
     )
     this._configInstance = configInstance
     this._marketAddress = marketInfo.marketAddress || null
+    this._transactionHash = null
   }
 
   /**
@@ -29,6 +30,7 @@ class Market {
     try {
       const market = await this._configInstance.gnosisJS.createMarket(this._marketInfo)
       this._marketAddress = market.address
+      this._transactionHash = market.transactionHash
     } catch (error) {
       throw error
     }
@@ -212,6 +214,10 @@ class Market {
 
   async getStage () {
     return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
+  }
+
+  getTransactionHash () {
+    return this._transactionHash
   }
 }
 
