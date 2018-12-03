@@ -189,17 +189,32 @@ const createMarket = async (marketDescription, configInstance) => {
 * Funds a market instance.
 */
 const fundMarket = async (marketDescription, configInstance) => {
+  let transactions, cost
   logInfo(`Funding market with address ${marketDescription.marketAddress}...`)
   const market = new Market(marketDescription, configInstance)
   market.setAddress(marketDescription.marketAddress)
   try {
-    await market.fund()
+    transactions = await market.fund()
   } catch (error) {
     logError('Are you sure you have enough collateral tokens for funding the market?')
     throw error
   }
 
   logInfo('Market funded successfully')
+
+  // Get transaction costs for each transaction in fund market process
+  for (let idx in transactions) {
+    let transaction = transactions[idx]
+    cost = await getTransactionCost(transaction.transactionHash, configInstance)
+
+    const transactionCost = {
+      "method": transaction.method,
+      "cost": cost
+    }
+    marketDescription.costs.push(transactionCost)
+    logInfo(`Market ${transaction.method} Cost: ${transactionCost.cost/1e9} ETH`)
+  }
+
   return marketDescription
 }
 
