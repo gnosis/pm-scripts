@@ -36,6 +36,10 @@ class Market {
     }
   }
 
+  /**
+  * Waits for a transaction to get mined. Returns True if the transaction goes through,
+  * False otherwise.
+  */
   async waitForMinedTransaction (transactionHash, transactionName) {
     let txReceipt
     const web3 = this._configInstance.blockchainProvider.getWeb3()
@@ -58,6 +62,7 @@ class Market {
 
   /**
   * Funds a Market, moves collateral token funds on the market.
+  * Returns an array of Objects [ { "method": "methodName", "transactionHash": 0x... }]
   */
   async fund () {
     let txResponse, transactionMined, transactions = []
@@ -118,9 +123,11 @@ class Market {
 
   /**
   * Resolves a Market, sets the winning outcome on the Market's related Event and Oracle.
+  * Returns an array of Objects [ { "method": "methodName", "transactionHash": 0x... }]
   */
   async resolve () {
     let oracle, outcomeSet, event, txReceipt
+    let transactionMined, transactions = []
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
     const gasPrice = this._configInstance.gasPrice
@@ -140,20 +147,12 @@ class Market {
         const oracleTxResponse = await oracle.resolve(this._marketInfo.winningOutcome)
         logInfo(`Waiting for oracle setOutcome transaction to be mined, tx hash: ${oracleTxResponse.tx}`)
 
-        while (true) {
-          sleep.msleep(TX_LOOKUP_TIME)
-          txReceipt = await promisify(web3.eth.getTransactionReceipt)(oracleTxResponse.tx)
-          // the transaction receipt shall cointain the status property
-          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
-          if (!txReceipt) {
-            continue
-          } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
-            // handle error, transaction failed
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
-            logInfo('Oracle setOutcome transaction was mined')
-            break
-          }
+        transactionMined = await this.waitForMinedTransaction(oracleTxResponse.tx, 'oracleSetOutcome')
+        if (!transactionMined) {
+          throw new Error(`oracleSetOutcome transaction for market ${this._marketAddress} failed.`)
+        } else {
+          logInfo('Oracle setOutcome transaction was mined')
+          transactions.push({ "method": "oracleSetOutcome", "transactionHash": oracleTxResponse.tx })
         }
       } else {
         logInfo('Oracle already resolved')
@@ -170,27 +169,19 @@ class Market {
         const eventTxResponse = await event.resolve()
         logInfo(`Waiting for event setOutcome transaction to be mined, tx hash: ${eventTxResponse.tx}`)
 
-        while (true) {
-          sleep.msleep(TX_LOOKUP_TIME)
-          txReceipt = await promisify(web3.eth.getTransactionReceipt)(eventTxResponse.tx)
-          // the transaction receipt shall cointain the status property
-          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
-          if (!txReceipt) {
-            continue
-          } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
-            // handle error, transaction failed
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
-            logInfo('Event setOutcome transaction was mined')
-            break
-          }
+        transactionMined = await this.waitForMinedTransaction(eventTxResponse.tx, 'eventSetOutcome')
+        if (!transactionMined) {
+          throw new Error(`eventSetOutcome transaction for market ${this._marketAddress} failed.`)
+        } else {
+          logInfo('Event setOutcome transaction was mined')
+          transactions.push({ "method": "eventSetOutcome", "transactionHash": eventTxResponse.tx })
         }
       } else {
         logInfo('Event already resolved')
       }
 
       // Close the market, so that it can't receive new trades
-      await market.close({ gasPrice })
+      const marketTxResponse = await market.close({ gasPrice })
 
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)
@@ -205,9 +196,14 @@ class Market {
         sleep.msleep(TX_LOOKUP_TIME)
       }
       logSuccess(`Market ${this._marketAddress} resolved successfully`)
+      transactionMined = await this.waitForMinedTransaction(marketTxResponse.tx, 'close')
+      transactions.push({ "method": "close", "transactionHash": marketTxResponse.tx })
     }
 
     this._winningOutcome = this._marketInfo.winningOutcome
+
+    // Return transactions dict
+    return transactions
   }
 
   /**
