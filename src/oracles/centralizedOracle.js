@@ -3,6 +3,7 @@ class CentralizedOracle {
     this._eventDescription = eventDescription
     this._configInstance = configInstance
     this._ipfsHash = null
+    this._transactionHash = null
     this._oracleAddress = eventDescription.oracleAddress ? eventDescription.oracleAddress : null
   }
 
@@ -20,6 +21,7 @@ class CentralizedOracle {
     const gasPrice = this._configInstance.gasPrice
     const oracle = await this._configInstance.gnosisJS.createCentralizedOracle(this._ipfsHash, { gasPrice })
     this._oracleAddress = oracle.address
+    this._transactionHash = oracle.transactionHash
   }
 
   /**
@@ -49,6 +51,10 @@ class CentralizedOracle {
 
   getIpfsHash () {
     return this._ipfsHash
+  }
+
+  getTransactionHash () {
+    return this._transactionHash
   }
 }
 
