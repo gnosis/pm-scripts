@@ -19,6 +19,18 @@ class BaseEvent {
     const event = await this._configInstance.gnosisJS.contracts.Event.at(this._eventAddress)
     return await event.setOutcome({ gasPrice })
   }
+
+  /**
+  * Getters
+  */
+
+  getAddress () {
+    return this._eventAddress
+  }
+
+  getTransactionHash () {
+    return this._transactionHash
+  }
 }
 
 module.exports = BaseEvent
