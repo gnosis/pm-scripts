@@ -287,7 +287,7 @@ const resolveMarket = async (marketDescription, configInstance) => {
         }
         marketDescription.costs.push(transactionCost)
         logInfo(`Market ${transaction.method} Cost: ${transactionCost.cost/1e9} ETH`)
-      }
+        }
     }
   }
   return marketDescription
@@ -459,6 +459,12 @@ const runProcessStack = async (configInstance, marketDescription, steps, step, s
       if (steps[step][x].name === 'resolveMarket') {
         if (marketDescription.winningOutcome !== undefined) {
           if (!isResolved) {
+            // If categorical event, check the winning outcome is within the list of outcomes
+            if (marketDescription.outcomeType == 'CATEGORICAL' && (parseInt(marketDescription.winningOutcome) >= marketDescription.outcomes.length || parseInt(marketDescription.winningOutcome) < 0)) {
+              logWarn(`Winning outcome ${marketDescription.winningOutcome} out of index, please check the 'outcomes' property on your market description`)
+              continue
+            }
+
             const formattedOutcome = formatWinningOutcome(marketDescription)
             if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
               // skip
