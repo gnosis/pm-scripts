@@ -10,6 +10,7 @@ class ScalarEvent extends BaseEvent {
       {
         collateralToken: configInstance.collateralToken,
         gasPrice: configInstance.gasPrice,
+        gas: configInstance.gasLimit,
         oracle: configInstance.gnosisJS.contracts.CentralizedOracle.at(eventInfo.oracleAddress)
       }
     )

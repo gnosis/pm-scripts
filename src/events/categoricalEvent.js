@@ -11,6 +11,7 @@ class CategoricalEvent extends BaseEvent {
         collateralToken: configInstance.collateralToken,
         outcomeCount: eventInfo.outcomes.length,
         gasPrice: configInstance.gasPrice,
+        gas: configInstance.gasLimit,
         oracle: configInstance.gnosisJS.contracts.CentralizedOracle.at(eventInfo.oracleAddress)
       }
     )

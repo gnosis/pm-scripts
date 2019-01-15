@@ -4,7 +4,7 @@ import fs from 'fs'
 import BaseValidator from './baseValidator'
 import { ValidationError, SystemCheckError } from './exceptions'
 import Client from '../clients/ethereum'
-import { HD_WALLET_ACCOUNTS } from '../utils/constants'
+import { HD_WALLET_ACCOUNTS, DEFAULT_GAS_PRICE, DEFAULT_GAS_LIMIT } from '../utils/constants'
 import { hasWriteDirectoryPerms } from '../utils/os'
 
 class ConfigValidator extends BaseValidator {
@@ -28,6 +28,16 @@ class ConfigValidator extends BaseValidator {
         'name': 'account',
         'setters': ['declaredOrDefaultAccount'],
         'validators': ['hasBalance']
+      },
+      {
+        'name': 'gasPrice',
+        'setters': ['defaultGasPrice'],
+        'validators': ['required']
+      },
+      {
+        'name': 'gasLimit',
+        'setters': ['defaultGasLimit'],
+        'validators': ['required']
       }
     ]
 
@@ -48,7 +58,9 @@ class ConfigValidator extends BaseValidator {
         'protocol': 'https',
         'host': 'ipfs.infura.io',
         'port': 5001
-      }
+      },
+      'gasPrice': DEFAULT_GAS_PRICE,
+      'gasLimit': DEFAULT_GAS_LIMIT
     }
   }
 
@@ -175,6 +187,8 @@ class ConfigValidator extends BaseValidator {
     newConfig.tradingDBUrl = this.getTradingDBUrl()
     newConfig.ipfs = this.getIpfsObject()
     newConfig.ipfsUrl = this.getIPFSUrl()
+    newConfig.gasLimit = parseInt(this._config.gasLimit)
+    newConfig.gasPrice = parseInt(this._config.gasPrice)
     newConfig.collateralToken = newConfig.collateralToken.toLowerCase()
     // GnosisJS instance options
     const gnosisOptions = {
@@ -232,6 +246,22 @@ class ConfigValidator extends BaseValidator {
   /**
   * Custom validators
   */
+  defaultGasPrice (gasPrice) {
+    if (!gasPrice) {
+      this._config.gasPrice = this._defaults.gasPrice
+    } else {
+      this._config.gasPrice = gasPrice
+    }
+  }
+
+  defaultGasLimit (gasLimit) {
+    if (!gasLimit) {
+      this._config.gasLimit = this._defaults.gasLimit
+    } else {
+      this._config.gasLimit = gasLimit
+    }
+  }
+
   async declaredOrDefaultAccount (account) {
     if (!this.requiredEthAddress(account)) {
       // Get default account

@@ -19,7 +19,8 @@ class CentralizedOracle {
   */
   async create () {
     const gasPrice = this._configInstance.gasPrice
-    const oracle = await this._configInstance.gnosisJS.createCentralizedOracle(this._ipfsHash, { gasPrice })
+    const gasLimit = this._configInstance.gasLimit
+    const oracle = await this._configInstance.gnosisJS.createCentralizedOracle(this._ipfsHash, { gas: gasLimit, gasPrice })
     this._oracleAddress = oracle.address
     this._transactionHash = oracle.transactionHash
   }
@@ -37,8 +38,9 @@ class CentralizedOracle {
   */
   async resolve (outcome) {
     const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
     const oracle = await this._configInstance.gnosisJS.contracts.CentralizedOracle.at(this._oracleAddress)
-    return await oracle.setOutcome(outcome, { gasPrice })
+    return await oracle.setOutcome(outcome, { gasPrice, gas: gasLimit })
   }
 
   /**

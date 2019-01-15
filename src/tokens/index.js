@@ -20,15 +20,16 @@ class Token {
     }
 
     const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
     const web3 = this._configInstance.blockchainProvider.getWeb3()
     let txReceipt
 
     if (await isPlayMoneyToken(this._configInstance) == true) {
       const playTokenContract = this._configInstance.gnosisJS.contracts.OlympiaToken.at(this._configInstance.collateralToken)
-      result = await playTokenContract.issue([this._configInstance.account], amount, { gasPrice })
+      result = await playTokenContract.issue([this._configInstance.account], amount, { gasPrice, gas: gasLimit })
     } else {
       const etherTokenContract = this._configInstance.gnosisJS.contracts.EtherToken.at(this._configInstance.collateralToken)
-      result = await etherTokenContract.deposit({ value: amount, gasPrice })
+      result = await etherTokenContract.deposit({ value: amount, gas: gasLimit, gasPrice })
     }
 
     logInfo(`Waiting for Ether Wrapping transaction to be mined, tx hash: ${result.tx}`)
