@@ -15,7 +15,8 @@ class Market {
       {
         event: configInstance.gnosisJS.contracts.Event.at(marketInfo.eventAddress),
         marketMaker: configInstance.gnosisJS.lmsrMarketMaker,
-        gasPrice: configInstance.gasPrice
+        gasPrice: configInstance.gasPrice,
+        gas: configInstance.gasLimit
       }
     )
     this._configInstance = configInstance
@@ -70,6 +71,7 @@ class Market {
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     const collateralTokenInstance = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
     const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
 
     // Check if token is play money token
     if (await isPlayMoneyToken(this._configInstance)) {
@@ -107,7 +109,7 @@ class Market {
     }
 
     // // Fund market
-    txResponse = await market.fund(this._marketInfo.funding, { gasPrice })
+    txResponse = await market.fund(this._marketInfo.funding, { gasPrice, gas: gasLimit })
     logInfo(`Waiting for funding transaction to be mined, tx hash: ${txResponse.tx}`)
     transactionMined = await this.waitForMinedTransaction(txResponse.tx, 'fund')
     if (!transactionMined) {
@@ -131,6 +133,7 @@ class Market {
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
     const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
 
     if (stage.toNumber() === MARKET_STAGES.created) {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CREATED)`)
@@ -181,7 +184,7 @@ class Market {
       }
 
       // Close the market, so that it can't receive new trades
-      const marketTxResponse = await market.close({ gasPrice })
+      const marketTxResponse = await market.close({ gasPrice, gas: gasLimit })
 
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)

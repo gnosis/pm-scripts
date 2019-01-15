@@ -4,7 +4,7 @@
   "account": "0x7ec8664a7be9c96a7e8b627f84789e5850887312",
   "blockchain": {
     "protocol": "https",
-    "host": "rinkeby.infura.io/gnosis/",
+    "host": "rinkeby.infura.io",
     "port": "443"
   },
   "pm-trading-db": {
@@ -18,5 +18,6 @@
     "port": "5001"
   },
   "gasPrice": "1000000000",
-  "collateralToken": ""
+  "gasLimit": "7500000",
+  "collateralToken": "0xc778417e063141139fce010982780140aa0cd5ab"
 }

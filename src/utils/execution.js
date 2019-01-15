@@ -34,6 +34,7 @@ const printConfiguration = (configuration) => {
   logInfo(`===== TradingDB: ${configuration.tradingDBUrl}`)
   logInfo(`===== IPFS: ${configuration.ipfsUrl}`)
   logInfo(`===== Gas Price: ${configuration.gasPrice}`)
+  logInfo(`===== Gas Limit: ${configuration.gasLimit}`)
   logInfo(`===== Collateral Token: ${configuration.collateralToken}`)
   logSuccess('==============================')
   logInfo('')

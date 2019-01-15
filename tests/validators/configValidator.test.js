@@ -92,5 +92,16 @@ describe('Config Validator', function () {
     expect(normConfig.tradingDBUrl).not.to.be(undefined)
     expect(normConfig.ipfs).to.be.an('object')
     expect(normConfig.ipfsUrl).not.to.be(undefined)
+  }),
+  it('Default gas price and limit', async () => {
+    const validator = new ConfigValidator(configDir + 'valid_config.json')
+    await validator.isValid()
+    const config = validator.getConfig()
+    await validator.normalize()
+    const normConfig = validator.getConfig()
+    expect(normConfig.gasPrice).not.to.be(undefined)
+    expect(normConfig.gasLimit).not.to.be(undefined)
+    expect(normConfig.gasPrice).to.be(100000000) // see valid_config.json (gasPrice)
+    expect(normConfig.gasLimit).to.be(7500000) // see valid_config.json (gasLimit)
   })
 })
