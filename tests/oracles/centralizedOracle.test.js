@@ -1,5 +1,5 @@
 import ConfigValidator from '../../src/validators/configValidator'
-import CentralizedOracle from '../../src/oracles/centralizedOracle'
+import CentralizedOracleMock from '../helpers/CentralizedOracleMock'
 import { categoricalEventDescription } from '../helpers/market'
 import { configDir } from '../helpers/generics'
 import expect from 'expect.js'
@@ -11,7 +11,7 @@ describe('CentralizedOracle', function () {
     await validator.isValid()
     await validator.normalize()
     const config = validator.getConfig()
-    const oracle = new CentralizedOracle(categoricalEventDescription, config)
+    const oracle = new CentralizedOracleMock(categoricalEventDescription, config)
     await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
