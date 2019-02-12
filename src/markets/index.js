@@ -44,7 +44,7 @@ class Market {
     const gasPrice = this._configInstance.gasPrice
 
     // Check if token is play money token
-    if (await isPlayMoneyToken(this._configInstance)) {
+    if (await isPlayMoneyToken(this._configInstance) == true) {
       const playTokenInstance = getPlayMoneyTokenInstance(this._configInstance)
       await playTokenInstance.allowTransfers([
         this._marketInfo.marketAddress,
