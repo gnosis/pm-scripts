@@ -29,7 +29,7 @@ class Token {
       result = await playTokenContract.issue([this._configInstance.account], amount, { gasPrice, gas: gasLimit })
     } else {
       const etherTokenContract = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
-      result = await etherTokenContract.deposit({ value: amount, gasPrice })
+      result = await etherTokenContract.deposit({ value: amount, gas: gasLimit, gasPrice })
     }
 
     logInfo(`Waiting for Ether Wrapping transaction to be mined, tx hash: ${result.tx}`)

@@ -37,7 +37,7 @@ describe('Events', function () {
     const config = validator.getConfig()
     // Create event with 6 outcomes
     categoricalEventDescription.outcomes = ['1', '2', '3', '4', '5', '6']
-    const oracle = new CentralizedOracle(categoricalEventDescription, config)
+    const oracle = new CentralizedOracleMock(categoricalEventDescription, config)
     await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
