@@ -1,5 +1,6 @@
 language: node_js
 node_js:
+- '8'
 - '9'
 install:
 - rm -rf node_modules && npm install -g truffle@4.1.0 npm@6.4.1 && npm ci -q

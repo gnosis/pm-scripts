@@ -74,6 +74,7 @@ Contains the main pm-scripts configuration and has the following structure:
     "port": "5001"
   },
   "gasPrice": "1000000000",
+  "gasLimit": "7500000",
   "collateralToken": "0xd19bce9f7693598a9fa1f94c548b20887a33f141"
 }
 ```
@@ -84,7 +85,8 @@ Contains the main pm-scripts configuration and has the following structure:
 * **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
 * **tradingDB**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
 * **ipfs**, sets the IPFS node pm-scripts should send transactions to (https://ipfs.infura.io:5001 by default);
-* **gasPrice**, the desired gasPrice
+* **gasPrice**, the desired gasPrice, defaults to 4000000000
+* **gasLimit**, the desired gasLimit, defaults to 7500000
 * **collateralToken**, the Collateral Token contract's address:
   - **Rinkeby:** 0xd19bce9f7693598a9fa1f94c548b20887a33f141
   - **Kovan:** 0x9326454039077bcea0705d6b68c8e9b104094a1c
@@ -114,7 +116,7 @@ A text field defining which currency is holding the market's funds.
 A text field defining the amount of fee held by the market creator. More info on the dedicated [pm-js documentation](https://pm-js.readthedocs.io/en/latest/events-oracles-and-markets.html#markets-and-automated-market-makers).
 
 ##### funding
-A text field representing how much funds to provid the market with.
+A text field representing how much funds to provide the market with.
 
 ##### winningOutcome
 A text field representing the winning outcome. If declared, pm-scripts  will try to resolve the market, but will always ask you to confirm before proceeding.
@@ -233,13 +235,13 @@ As the Reward Contract could be running on a different chain than the contracts,
     ]
   }
  ```
- 
+
  To execute the Claim Reward just run the following command:
- 
+
  ```node lib/main.js claimrewards```
- 
+
  You can specify a custom config file path by running:
- 
+
  ```node lib/main.js claimrewards -f /path/to/config.json```
 
 ## License

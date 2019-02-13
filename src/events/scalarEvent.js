@@ -4,12 +4,13 @@ class ScalarEvent extends BaseEvent {
   constructor (eventInfo, configInstance) {
     super()
     this._eventInfo = Object.assign({}, eventInfo)
-    this._eventAddress = this._eventInfo.eventAddress
+    super()._eventAddress = this._eventInfo.eventAddress
     Object.assign(
       this._eventInfo,
       {
         collateralToken: configInstance.collateralToken,
         gasPrice: configInstance.gasPrice,
+        gas: configInstance.gasLimit,
         oracle: configInstance.gnosisJS.contracts.CentralizedOracle.at(eventInfo.oracleAddress)
       }
     )
@@ -22,15 +23,9 @@ class ScalarEvent extends BaseEvent {
   async create () {
     const event = await this._configInstance.gnosisJS.createScalarEvent(this._eventInfo)
     this._eventAddress = event.address
+    this._transactionHash = event.transactionHash
   }
 
-  /**
-  * Getters
-  */
-
-  getAddress () {
-    return this._eventAddress
-  }
 }
 
 module.exports = ScalarEvent

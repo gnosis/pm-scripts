@@ -71,7 +71,9 @@ class BaseValidator {
         value.length
       )
     }
-
+    if (typeof value === 'number') {
+      return true
+    }
     return value !== null && value !== undefined && value.trim().length > 0
   }
 

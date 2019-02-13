@@ -14,12 +14,14 @@ describe('Events', function () {
     await validator.isValid()
     await validator.normalize()
     const config = validator.getConfig()
+
     const oracle = new CentralizedOracleMock(categoricalEventDescription, config)
     await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
     expect(oracleAddress).to.be.a('string')
     expect(oracleAddress.length).to.be(42)
+    // Create event
     const eventInfo = Object.assign(categoricalEventDescription, {oracleAddress})
     const event = new CategoricalEvent(eventInfo, config)
     await event.create()
@@ -27,18 +29,41 @@ describe('Events', function () {
     expect(eventAddress).to.be.a('string')
     expect(eventAddress.length).to.be(42)
     expect(await event.isResolved()).to.be(false)
-  })
+  }),
+  it('Huge categorical Event', async () => {
+    const validator = new ConfigValidator(configDir + 'valid_config.json')
+    await validator.isValid()
+    await validator.normalize()
+    const config = validator.getConfig()
+    // Create event with 6 outcomes
+    categoricalEventDescription.outcomes = ['1', '2', '3', '4', '5', '6']
+    const oracle = new CentralizedOracle(categoricalEventDescription, config)
+    await oracle.publishEventDescription()
+    await oracle.create()
+    const oracleAddress = oracle.getAddress()
+    // Create event
+    const eventInfo = Object.assign(categoricalEventDescription, {oracleAddress})
+    const event = new CategoricalEvent(eventInfo, config)
+    await event.create()
+    const eventAddress = event.getAddress()
+    expect(eventAddress).to.be.a('string')
+    expect(eventAddress.length).to.be(42)
+    expect(await event.isResolved()).to.be(false)
+  }),
   it('Scalar Event', async () => {
     const validator = new ConfigValidator(configDir + 'valid_config.json')
     await validator.isValid()
     await validator.normalize()
     const config = validator.getConfig()
+
     const oracle = new CentralizedOracleMock(scalarEventDescription, config)
+
     await oracle.publishEventDescription()
     await oracle.create()
     const oracleAddress = oracle.getAddress()
     expect(oracleAddress).to.be.a('string')
     expect(oracleAddress.length).to.be(42)
+    // Create event
     const eventInfo = Object.assign(scalarEventDescription, {oracleAddress}, { gas: defaultGas })
     const event = new ScalarEvent(eventInfo, config)
     await event.create()

@@ -8,6 +8,7 @@ import {
 import { logSuccess, logInfo, logError, logWarn } from './log'
 import { readFile, fileExists } from './os'
 import { capitalizeFirstLetter } from './string'
+import { getTransactionCost } from './ethereum'
 import CentralizedOracle from './../oracles/centralizedOracle'
 import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
@@ -26,14 +27,17 @@ import minimist from 'minimist'
 * See ConfigValidator.normalize()
 */
 const printConfiguration = (configuration) => {
-  logSuccess('Your configuration:')
-  logInfo(`>> Account: ${configuration.account}`)
-  logInfo(`>> Blockchain: ${configuration.blockchainUrl}`)
-  logInfo(`>> TradingDB: ${configuration.tradingDBUrl}`)
-  logInfo(`>> IPFS: ${configuration.ipfsUrl}`)
-  logInfo(`>> Gas Price: ${configuration.gasPrice}`)
-  logInfo(`>> Collateral Token: ${configuration.collateralToken}`)
-
+  logInfo('')
+  logSuccess('===== Your configuration =====')
+  logInfo(`===== Account: ${configuration.account}`)
+  logInfo(`===== Blockchain: ${configuration.blockchainUrl}`)
+  logInfo(`===== TradingDB: ${configuration.tradingDBUrl}`)
+  logInfo(`===== IPFS: ${configuration.ipfsUrl}`)
+  logInfo(`===== Gas Price: ${configuration.gasPrice}`)
+  logInfo(`===== Gas Limit: ${configuration.gasLimit}`)
+  logInfo(`===== Collateral Token: ${configuration.collateralToken}`)
+  logSuccess('==============================')
+  logInfo('')
 }
 
 /**
@@ -54,6 +58,25 @@ const printTokenBalance = async configInstance => {
 }
 
 /**
+* Prints out the market deployment costs
+*/
+const printMarketCosts = marketDescription => {
+  let total = 0
+
+  logInfo('')
+  logSuccess('===== Deployment costs recap =====')
+
+  marketDescription.costs.forEach(costObj => {
+    logInfo(`===== ${costObj.method}: ${costObj.cost/1e9} ETH`)
+    total += costObj.cost
+  })
+
+  logInfo(`===== TOTAL: ${total/1e9} ETH`)
+  logSuccess('==================================')
+  logInfo('')
+}
+
+/**
 * Prints out the current setted ethereum account and balance
 */
 const printAccountBalance = async configInstance => {
@@ -63,6 +86,7 @@ const printAccountBalance = async configInstance => {
     configInstance.blockchainUrl
   )
   const balance = (await client.getBalance(configInstance.account)) / 1e18
+  logInfo('')
   logSuccess(`Your Ethereum address is ${configInstance.account}`)
   logSuccess(`Your account balance is ${balance} ETH`)
 }
@@ -125,6 +149,14 @@ const createOracle = async (eventDescription, configInstance) => {
   eventDescription.oracleAddress = oracle.getAddress()
   logInfo(`Centralized Oracle with address ${eventDescription.oracleAddress} created successfully`)
 
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createOracle",
+    "cost": await getTransactionCost(oracle.getTransactionHash(), configInstance)
+  }
+  eventDescription.costs.push(transactionCost)
+  logInfo(`Oracle creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return eventDescription
 }
 
@@ -143,6 +175,15 @@ const createEvent = async (eventDescription, configInstance) => {
   await event.create()
   eventDescription.eventAddress = event.getAddress()
   logInfo(`${capitalizedEventType} Event with address ${eventDescription.eventAddress} created successfully`)
+
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createEvent",
+    "cost": await getTransactionCost(event.getTransactionHash(), configInstance)
+  }
+  eventDescription.costs.push(transactionCost)
+  logInfo(`Event creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return eventDescription
 }
 
@@ -155,6 +196,15 @@ const createMarket = async (marketDescription, configInstance) => {
   await market.create()
   marketDescription.marketAddress = market.getAddress()
   logInfo(`Market with address ${marketDescription.marketAddress} created successfully, check it out: ${configInstance.tradingDBUrl}/api/markets/${marketDescription.marketAddress}`)
+
+  // Get transaction cost
+  const transactionCost = {
+    "method": "createMarket",
+    "cost": await getTransactionCost(market.getTransactionHash(), configInstance)
+  }
+  marketDescription.costs.push(transactionCost)
+  logInfo(`Market creation Cost: ${transactionCost.cost/1e9} ETH`)
+
   return marketDescription
 }
 
@@ -162,17 +212,32 @@ const createMarket = async (marketDescription, configInstance) => {
 * Funds a market instance.
 */
 const fundMarket = async (marketDescription, configInstance) => {
+  let transactions, cost
   logInfo(`Funding market with address ${marketDescription.marketAddress}...`)
   const market = new Market(marketDescription, configInstance)
   market.setAddress(marketDescription.marketAddress)
   try {
-    await market.fund()
+    transactions = await market.fund()
   } catch (error) {
     logError('Are you sure you have enough collateral tokens for funding the market?')
     throw error
   }
 
   logInfo('Market funded successfully')
+
+  // Get transaction costs for each transaction in fund market process
+  for (let idx in transactions) {
+    let transaction = transactions[idx]
+    cost = await getTransactionCost(transaction.transactionHash, configInstance)
+
+    const transactionCost = {
+      "method": transaction.method,
+      "cost": cost
+    }
+    marketDescription.costs.push(transactionCost)
+    logInfo(`Market ${transaction.method} Cost: ${transactionCost.cost/1e9} ETH`)
+  }
+
   return marketDescription
 }
 
@@ -189,6 +254,8 @@ const formatWinningOutcome = marketInfo => {
 * file.
 */
 const resolveMarket = async (marketDescription, configInstance) => {
+  let transactions, cost
+
   if (marketDescription.winningOutcome === undefined) {
     logWarn(`No winning outcome set for market ${marketDescription.marketAddress}`)
   } else {
@@ -204,11 +271,24 @@ const resolveMarket = async (marketDescription, configInstance) => {
       logInfo(`Resolving Market with address ${marketDescription.marketAddress}...`)
       const market = new Market(marketDescription, configInstance)
       try {
-        await market.resolve()
+        transactions = await market.resolve()
         logInfo(`Market with address ${marketDescription.marketAddress} resolved successfully with outcome ${formatWinningOutcome(marketDescription)}`)
       } catch (error) {
         logError(error)
       }
+
+      // Get transaction costs for each transaction in fund market process
+      for (let idx in transactions) {
+        let transaction = transactions[idx]
+        cost = await getTransactionCost(transaction.transactionHash, configInstance)
+
+        const transactionCost = {
+          "method": transaction.method,
+          "cost": cost
+        }
+        marketDescription.costs.push(transactionCost)
+        logInfo(`Market ${transaction.method} Cost: ${transactionCost.cost/1e9} ETH`)
+        }
     }
   }
   return marketDescription
@@ -346,6 +426,10 @@ const runProcessStack = async (configInstance, marketDescription, steps, step, s
 
   let isFunded, isResolved
 
+  if (!marketDescription.costs) {
+    marketDescription.costs = []
+  }
+
   // Check if the user is willing to resolve a market and if the market is already resolved
   isResolved = await isMarketResolved(marketDescription, configInstance)
 
@@ -376,6 +460,12 @@ const runProcessStack = async (configInstance, marketDescription, steps, step, s
       if (steps[step][x].name === 'resolveMarket') {
         if (marketDescription.winningOutcome !== undefined) {
           if (!isResolved) {
+            // If categorical event, check the winning outcome is within the list of outcomes
+            if (marketDescription.outcomeType == 'CATEGORICAL' && (parseInt(marketDescription.winningOutcome) >= marketDescription.outcomes.length || parseInt(marketDescription.winningOutcome) < 0)) {
+              logWarn(`Winning outcome ${marketDescription.winningOutcome} out of index, please check the 'outcomes' property on your market description`)
+              continue
+            }
+
             const formattedOutcome = formatWinningOutcome(marketDescription)
             if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome ${formattedOutcome}?`, false)) {
               // skip
@@ -499,6 +589,8 @@ const executor = async (args, executionType, steps) => {
         step = getMarketStep(currentMarket, executionType)
         let updatedMarket = await runProcessStack(configInstance, currentMarket, steps, step, args.skipFundConfirmation)
         marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
+        // Print costs recap
+        printMarketCosts(marketFileCopy[x])
       }
       logInfo(`${executionType} done, writing updates to ${args.marketPath}`)
     } catch (error) {

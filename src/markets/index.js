@@ -15,11 +15,13 @@ class Market {
       {
         event: configInstance.gnosisJS.contracts.Event.at(marketInfo.eventAddress),
         marketMaker: configInstance.gnosisJS.lmsrMarketMaker,
-        gasPrice: configInstance.gasPrice
+        gasPrice: configInstance.gasPrice,
+        gas: configInstance.gasLimit
       }
     )
     this._configInstance = configInstance
     this._marketAddress = marketInfo.marketAddress || null
+    this._transactionHash = null
   }
 
   /**
@@ -29,72 +31,109 @@ class Market {
     try {
       const market = await this._configInstance.gnosisJS.createMarket(this._marketInfo)
       this._marketAddress = market.address
+      this._transactionHash = market.transactionHash
     } catch (error) {
       throw error
     }
   }
 
   /**
-  * Funds a Market, moves collateral token funds on the market.
+  * Waits for a transaction to get mined. Returns True if the transaction goes through,
+  * False otherwise.
   */
-  async fund () {
+  async waitForMinedTransaction (transactionHash, transactionName) {
     let txReceipt
-    const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
-    const gasPrice = this._configInstance.gasPrice
-
-    // Check if token is play money token
-    if (await isPlayMoneyToken(this._configInstance) == true) {
-      const playTokenInstance = getPlayMoneyTokenInstance(this._configInstance)
-      await playTokenInstance.allowTransfers([
-        this._marketInfo.marketAddress,
-        this._marketInfo.eventAddress
-      ])
-    }
-
-    // Approve tokens transferral
-    await collateralTokenInstance.approve(this._marketAddress, this._marketInfo.funding)
-
-    // // Fund market
-    const txResponse = await market.fund(this._marketInfo.funding, { gasPrice })
-
-    // First transaction check
-    if (txResponse.receipt && parseInt(txResponse.receipt.status) === 0) {
-      throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
-    } else if (txResponse.receipt && parseInt(txResponse.receipt.status) === 1) {
-      // success
-      return
-    }
-
-    logInfo(`Waiting for funding transaction to be mined, tx hash: ${txResponse.tx}`)
-
     const web3 = this._configInstance.blockchainProvider.getWeb3()
+
     while (true) {
       sleep.msleep(TX_LOOKUP_TIME)
-      txReceipt = await promisify(web3.eth.getTransactionReceipt)(txResponse.tx)
+      txReceipt = await promisify(web3.eth.getTransactionReceipt)(transactionHash)
       // the transaction receipt shall cointain the status property
       // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
       if (!txReceipt) {
         continue
       } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
         // handle error, transaction failed
-        throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+        return false
       } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
-        break
+        return true
+      }
+    }
+  }
+
+  /**
+  * Funds a Market, moves collateral token funds on the market.
+  * Returns an array of Objects [ { "method": "methodName", "transactionHash": 0x... }]
+  */
+  async fund () {
+    let txResponse, transactionMined, transactions = []
+    const web3 = this._configInstance.blockchainProvider.getWeb3()
+    const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
+    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
+    const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
+
+    // Check if token is play money token
+    if (await isPlayMoneyToken(this._configInstance) == true) {
+      const playTokenInstance = getPlayMoneyTokenInstance(this._configInstance)
+      txResponse = await playTokenInstance.allowTransfers([
+        this._marketInfo.marketAddress,
+        this._marketInfo.eventAddress
+      ])
+
+      // First transaction check
+      if (txResponse.receipt && parseInt(txResponse.receipt.status) === 0) {
+        throw new Error(`Playtoken allowTransfers transaction for market ${this._marketAddress} failed.`)
+      } else if (txResponse.receipt && parseInt(txResponse.receipt.status) === 1) {
+        // success
+        transactions.push({ "method": "allowTransfers", "transactionHash": txResponse.tx })
       }
 
+      transactionMined = await this.waitForMinedTransaction(txResponse.tx, 'allowTransfers')
+      if (!transactionMined) {
+        throw new Error(`AllowTransfers transaction for market ${this._marketAddress} failed.`)
+      } else {
+        logInfo('AllowTransfers transaction was mined')
+        transactions.push({ "method": "allowTransfers", "transactionHash": txResponse.tx })
+      }
     }
-    logInfo('Funding transaction was mined')
+
+    // Approve tokens transferral
+    txResponse = await collateralTokenInstance.approve(this._marketAddress, this._marketInfo.funding)
+    transactionMined = await this.waitForMinedTransaction(txResponse.tx, 'approve')
+    if (!transactionMined) {
+      throw new Error(`Approve transfer transaction for market ${this._marketAddress} failed.`)
+    } else {
+      logInfo('Approve  transfer transaction was mined')
+      transactions.push({ "method": "approve", "transactionHash": txResponse.tx })
+    }
+
+    // // Fund market
+    txResponse = await market.fund(this._marketInfo.funding, { gasPrice, gas: gasLimit })
+    logInfo(`Waiting for funding transaction to be mined, tx hash: ${txResponse.tx}`)
+    transactionMined = await this.waitForMinedTransaction(txResponse.tx, 'fund')
+    if (!transactionMined) {
+      throw new Error(`Funding transaction for market ${this._marketAddress} failed.`)
+    } else {
+      logInfo('Funding transaction was mined')
+      transactions.push({ "method": "fund", "transactionHash": txResponse.tx })
+    }
+
+    // Return transactions dict
+    return transactions
   }
 
   /**
   * Resolves a Market, sets the winning outcome on the Market's related Event and Oracle.
+  * Returns an array of Objects [ { "method": "methodName", "transactionHash": 0x... }]
   */
   async resolve () {
     let oracle, outcomeSet, event, txReceipt
+    let transactionMined, transactions = []
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
     const gasPrice = this._configInstance.gasPrice
+    const gasLimit = this._configInstance.gasLimit
 
     if (stage.toNumber() === MARKET_STAGES.created) {
       throw new Error(`Market ${this._marketAddress} cannot be resolved. It must be in funded stage (current stage is CREATED)`)
@@ -111,20 +150,12 @@ class Market {
         const oracleTxResponse = await oracle.resolve(this._marketInfo.winningOutcome)
         logInfo(`Waiting for oracle setOutcome transaction to be mined, tx hash: ${oracleTxResponse.tx}`)
 
-        while (true) {
-          sleep.msleep(TX_LOOKUP_TIME)
-          txReceipt = await promisify(web3.eth.getTransactionReceipt)(oracleTxResponse.tx)
-          // the transaction receipt shall cointain the status property
-          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
-          if (!txReceipt) {
-            continue
-          } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
-            // handle error, transaction failed
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
-            logInfo('Oracle setOutcome transaction was mined')
-            break
-          }
+        transactionMined = await this.waitForMinedTransaction(oracleTxResponse.tx, 'oracleSetOutcome')
+        if (!transactionMined) {
+          throw new Error(`oracleSetOutcome transaction for market ${this._marketAddress} failed.`)
+        } else {
+          logInfo('Oracle setOutcome transaction was mined')
+          transactions.push({ "method": "oracleSetOutcome", "transactionHash": oracleTxResponse.tx })
         }
       } else {
         logInfo('Oracle already resolved')
@@ -141,27 +172,19 @@ class Market {
         const eventTxResponse = await event.resolve()
         logInfo(`Waiting for event setOutcome transaction to be mined, tx hash: ${eventTxResponse.tx}`)
 
-        while (true) {
-          sleep.msleep(TX_LOOKUP_TIME)
-          txReceipt = await promisify(web3.eth.getTransactionReceipt)(eventTxResponse.tx)
-          // the transaction receipt shall cointain the status property
-          // which is [0, 1] for local ganache nodes, ['0x0' , '0x1'] on testnets
-          if (!txReceipt) {
-            continue
-          } else if (txReceipt && (parseInt(txReceipt.status) === 0 || txReceipt.status === false)) {
-            // handle error, transaction failed
-            throw new Error('Set outcome transaction has failed.')
-          } else if (txReceipt && (parseInt(txReceipt.status) === 1 || txReceipt.status === true) && txReceipt.blockNumber != null) {
-            logInfo('Event setOutcome transaction was mined')
-            break
-          }
+        transactionMined = await this.waitForMinedTransaction(eventTxResponse.tx, 'eventSetOutcome')
+        if (!transactionMined) {
+          throw new Error(`eventSetOutcome transaction for market ${this._marketAddress} failed.`)
+        } else {
+          logInfo('Event setOutcome transaction was mined')
+          transactions.push({ "method": "eventSetOutcome", "transactionHash": eventTxResponse.tx })
         }
       } else {
         logInfo('Event already resolved')
       }
 
       // Close the market, so that it can't receive new trades
-      await market.close({ gasPrice })
+      const marketTxResponse = await market.close({ gasPrice, gas: gasLimit })
 
       // Wait for the transaction to take effect
       logInfo(`Waiting for market resolution process to complete...`)
@@ -176,9 +199,14 @@ class Market {
         sleep.msleep(TX_LOOKUP_TIME)
       }
       logSuccess(`Market ${this._marketAddress} resolved successfully`)
+      transactionMined = await this.waitForMinedTransaction(marketTxResponse.tx, 'close')
+      transactions.push({ "method": "close", "transactionHash": marketTxResponse.tx })
     }
 
     this._winningOutcome = this._marketInfo.winningOutcome
+
+    // Return transactions dict
+    return transactions
   }
 
   /**
@@ -212,6 +240,10 @@ class Market {
 
   async getStage () {
     return this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress).stage()
+  }
+
+  getTransactionHash () {
+    return this._transactionHash
   }
 }
 
