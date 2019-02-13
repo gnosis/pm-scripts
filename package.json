@@ -1,6 +1,6 @@
 {
   "name": "pm-scripts",
-  "version": "1.4.2",
+  "version": "1.4.0",
   "description": "NodeJS utils easing Gnosis markets' operations.",
   "main": "src/main.js",
   "scripts": {
