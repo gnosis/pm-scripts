@@ -82,7 +82,7 @@ Contains the main pm-scripts configuration and has the following structure:
 * **accountCredential**, This is your wallet credential. Can be either HD wallet mnemonic phrase composed by 12 words ([HD wallet repository](https://github.com/trufflesuite/truffle-hdwallet-provider)) or private key ([HD wallet private key repository](https://github.com/rhlsthrm/truffle-hdwallet-provider-privkey));
 * **credentialType**, is a type of credential you want to use to access your account, available values: `mnemonic`, `privateKey`, default is `privateKey`;
 * **account**, is your ethereum address, all transactions will be sent from this address. If not provided, pm-scripts will calculate it from your mnemonic phrase;
-* **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/gnosis/ by default);
+* **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/ by default);
 * **tradingDB**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
 * **ipfs**, sets the IPFS node pm-scripts should send transactions to (https://ipfs.infura.io:5001 by default);
 * **gasPrice**, the desired gasPrice, defaults to 4000000000
