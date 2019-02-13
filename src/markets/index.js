@@ -69,12 +69,12 @@ class Market {
     let txResponse, transactionMined, transactions = []
     const web3 = this._configInstance.blockchainProvider.getWeb3()
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
-    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.Token.at(this._configInstance.collateralToken)
+    const collateralTokenInstance = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
     const gasPrice = this._configInstance.gasPrice
     const gasLimit = this._configInstance.gasLimit
 
     // Check if token is play money token
-    if (await isPlayMoneyToken(this._configInstance)) {
+    if (await isPlayMoneyToken(this._configInstance) == true) {
       const playTokenInstance = getPlayMoneyTokenInstance(this._configInstance)
       txResponse = await playTokenInstance.allowTransfers([
         this._marketInfo.marketAddress,

@@ -44,7 +44,7 @@ const printConfiguration = (configuration) => {
 * Prints out the token balance of the account defined in the configuration
 */
 const printTokenBalance = async configInstance => {
-  const etherToken = await configInstance.gnosisJS.contracts.Token.at(configInstance.collateralToken)
+  const etherToken = await configInstance.gnosisJS.contracts.WETH9.at(configInstance.collateralToken)
   const tokenInfo = await new Token(configInstance).getInfo()
   const balance = (await etherToken.balanceOf(configInstance.account)) / 1e18
   const tokenName = tokenInfo.name !== undefined ? tokenInfo.name : 'Wrapped Ether Token'
