@@ -9,7 +9,7 @@
   },
   "pm-trading-db": {
     "protocol": "https",
-    "host": "tradingdb.rinkeby.gnosis.pm",
+    "host": "tradingdb.rinkeby.gnosis.io",
     "port": "443"
   },
   "ipfs": {
