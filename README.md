@@ -65,7 +65,7 @@ Contains the main pm-scripts configuration and has the following structure:
   },
   "tradingDB": {
     "protocol": "https",
-    "host": "tradingdb.rinkeby.gnosis.pm",
+    "host": "tradingdb.rinkeby.gnosis.io",
     "port": "443"
   },
   "ipfs": {
@@ -83,7 +83,7 @@ Contains the main pm-scripts configuration and has the following structure:
 * **credentialType**, is a type of credential you want to use to access your account, available values: `mnemonic`, `privateKey`, default is `privateKey`;
 * **account**, is your ethereum address, all transactions will be sent from this address. If not provided, pm-scripts will calculate it from your mnemonic phrase;
 * **blockchain**, defines the Ethereum Node pm-scripts should send transactions to (https://rinkeby.infura.io/ by default);
-* **tradingDB**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://pm-trading-db.rinkeby.gnosis.pm:443);
+* **tradingDB**, defines the [pm-trading-db](https://github.com/gnosis/pm-trading-db/) url, an Ethereum indexer which exposes a handy API to get your list of markets and their details (default: https://tradingdb.rinkeby.gnosis.io:443);
 * **ipfs**, sets the IPFS node pm-scripts should send transactions to (https://ipfs.infura.io:5001 by default);
 * **gasPrice**, the desired gasPrice, defaults to 4000000000
 * **gasLimit**, the desired gasLimit, defaults to 7500000
@@ -187,7 +187,7 @@ Finally run
 
 ## Fetch markets data: pm-trading-db API
 [pm-trading-db](https://github.com/gnosis/pm-trading-db/) provides a handy Rest API serving all markets created on top of Gnosis.
-Once you create a market, go to https://pm-trading-db.rinkeby.gnosis.pm:443/api/markets/{market_address} replace {market_address} with the address of your market and you will get access to all the market's data.
+Once you create a market, go to https://tradingdb.rinkeby.gnosis.io:443/api/markets/{market_address} replace {market_address} with the address of your market and you will get access to all the market's data.
 
 ## Using Custom Oracles
 
