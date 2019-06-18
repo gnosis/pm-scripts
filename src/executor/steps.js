@@ -223,11 +223,6 @@ const resolutionSteps = {
         'function': resolveMarket,
         'extendedName': 'Market resolution',
         'next': null
-    },
-    'winningOutcome': {
-        'name': 'winningOutcome',
-        'function': () => {},
-        'next': null
     }
 }
 
