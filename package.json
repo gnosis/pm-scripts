@@ -1,7 +1,7 @@
 {
   "name": "pm-scripts",
-  "version": "1.4.0",
-  "description": "NodeJS utils easing Gnosis markets' operations.",
+  "version": "1.5.0",
+  "description": "NodeJS utils easing operations on Gnosis markets.",
   "main": "src/main.js",
   "scripts": {
     "deploy": "npm run build && node lib/main.js deploy",
