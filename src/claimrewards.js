@@ -1,17 +1,12 @@
-import { claimRewards } from './utils/rewards'
-import { executor } from './utils/execution'
-
-const steps = {
-  '-1': [claimRewards],
-  '0': [claimRewards]
-}
+import executor from './executor'
+import { EXECUTION_TYPES } from './utils/constants'
 
 
 /**
 * Rewards claiming wrapper entrypoint
 */
 const main = async args => {
-  await executor(args, 'claimrewards', steps)
+  await executor(args, EXECUTION_TYPES.claimRewards) 
 }
 
 module.exports = {

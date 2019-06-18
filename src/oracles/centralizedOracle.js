@@ -2,7 +2,7 @@ class CentralizedOracle {
   constructor (eventDescription, configInstance) {
     this._eventDescription = eventDescription
     this._configInstance = configInstance
-    this._ipfsHash = null
+    this._ipfsHash = eventDescription.ipfsHash || null
     this._transactionHash = null
     this._oracleAddress = eventDescription.oracleAddress ? eventDescription.oracleAddress : null
   }

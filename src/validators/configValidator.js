@@ -51,7 +51,7 @@ class ConfigValidator extends BaseValidator {
     this._defaults = {
       'tradingDB': {
         'protocol': 'https',
-        'host': 'tradingdb.rinkeby.gnosis.pm',
+        'host': 'tradingdb.rinkeby.gnosis.io',
         'port': 443
       },
       'ipfs': {

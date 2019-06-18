@@ -5,7 +5,8 @@ import Client from './../clients/ethereum'
 import rewardClaimHandlerArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/RewardClaimHandler.json'
 import tokenArtifact from '@gnosis.pm/pm-apollo-contracts/build/contracts/Token.json'
 
-const claimRewards = async configInstance => {
+
+const claimRewards = async (marketDescription, configInstance) => {
   try {
     if (!configInstance.rewardClaimHandler || !configInstance.rewardClaimHandler.address) {
       throw new Error('rewardClaimHandler is required')
@@ -13,7 +14,7 @@ const claimRewards = async configInstance => {
 
     const {
       rewardClaimHandler: rewardClaimConfig,
-      tradingDB,
+      'pm-trading-db': tradingDB,
       credentialType,
       accountCredential,
       account,
