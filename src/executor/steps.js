@@ -1,8 +1,9 @@
+// import { formatWinningOutcome } from './utils'
 import { logInfo, logWarn, logError } from './../utils/log'
 import { MARKET_STAGES } from './../utils/constants'
 import { capitalizeFirstLetter } from './../utils/string'
 import { getTransactionCost } from './../utils/ethereum'
-import { formatWinningOutcome } from './utils'
+import { claimRewards } from './../utils/rewards'
 import CentralizedOracle from './../oracles/centralizedOracle'
 import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
@@ -167,7 +168,7 @@ const resolveMarket = async (marketDescription, configInstance) => {
             const market = new Market(marketDescription, configInstance)
             try {
                 transactions = await market.resolve()
-                logInfo(`Market with address ${marketDescription.marketAddress} resolved successfully with outcome ${formatWinningOutcome(marketDescription)}`)
+                // logInfo(`Market with address ${marketDescription.marketAddress} resolved successfully with outcome ${formatWinningOutcome(marketDescription)}`)
             } catch (error) {
                 logError(error)
             }
@@ -192,21 +193,25 @@ const resolveMarket = async (marketDescription, configInstance) => {
 const deploySteps = {
     'oracleAddress': {
         'name': 'oracleAddress',
+        'extendedName': 'Oracle creation',
         'function': createOracle,
         'next': 'eventAddress'
     },
     'eventAddress': {
         'name': 'eventAddress',
+        'extendedName': 'Event creation',
         'function': createEvent,
         'next': 'marketAddress'
     },
     'marketAddress': {
         'name': 'marketAddress',
+        'extendedName': 'Market creation',
         'function': createMarket,
         'next': 'fundMarket'
     },
     'fundMarket': {
         'name': 'fundMarket',
+        'extendedName': 'Fund market',
         'function': fundMarket,
         'next': null
     }
@@ -216,6 +221,7 @@ const resolutionSteps = {
     'resolveMarket': {
         'name': 'resolveMarket',
         'function': resolveMarket,
+        'extendedName': 'Market resolution',
         'next': null
     },
     'winningOutcome': {
@@ -225,7 +231,17 @@ const resolutionSteps = {
     }
 }
 
+const claimRewardsSteps = {
+    'claim': {
+        'name': 'claimRewards',
+        'function': claimRewards,
+        'extendedName': 'Claim rewards',
+        'next': null
+    },
+}
+
 module.exports = {
     deploySteps,
-    resolutionSteps
+    resolutionSteps,
+    claimRewardsSteps
 }

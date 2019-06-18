@@ -1,8 +1,10 @@
-import { TX_LOOKUP_TIME } from '../utils/constants'
-import { logInfo, logSuccess } from '../utils/log'
-import { isPlayMoneyToken } from '../utils/tokens'
 import { promisify } from '@gnosis.pm/pm-js'
 import sleep from 'sleep'
+
+import { TX_LOOKUP_TIME } from '../utils/constants'
+import { logInfo } from '../utils/log'
+import { isPlayMoneyToken } from '../utils/tokens'
+
 
 class Token {
   constructor (configInstance) {

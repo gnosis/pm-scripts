@@ -17,6 +17,7 @@ const MARKET_STAGES = {
 }
 
 const EXECUTION_TYPES = {
+  claimRewards: 'claimrewards',
   deploy: 'deploy',
   resolve: 'resolve'
 }

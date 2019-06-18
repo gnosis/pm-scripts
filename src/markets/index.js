@@ -1,11 +1,13 @@
+import { promisify } from '@gnosis.pm/pm-js'
+import sleep from 'sleep'
+
 import { MARKET_STAGES, TX_LOOKUP_TIME } from '../utils/constants'
 import { logInfo, logSuccess } from '../utils/log'
 import { isPlayMoneyToken, getPlayMoneyTokenInstance } from '../utils/tokens'
 import CentralizedOracle from './../oracles/centralizedOracle'
 import CategoricalEvent from './../events/categoricalEvent'
 import ScalarEvent from './../events/scalarEvent'
-import { promisify } from '@gnosis.pm/pm-js'
-import sleep from 'sleep'
+
 
 class Market {
   constructor (marketInfo, configInstance) {
@@ -67,7 +69,7 @@ class Market {
   */
   async fund () {
     let txResponse, transactionMined, transactions = []
-    const web3 = this._configInstance.blockchainProvider.getWeb3()
+    // const web3 = this._configInstance.blockchainProvider.getWeb3()
     const market = this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     const collateralTokenInstance = this._configInstance.gnosisJS.contracts.WETH9.at(this._configInstance.collateralToken)
     const gasPrice = this._configInstance.gasPrice
@@ -128,7 +130,7 @@ class Market {
   * Returns an array of Objects [ { "method": "methodName", "transactionHash": 0x... }]
   */
   async resolve () {
-    let oracle, outcomeSet, event, txReceipt
+    let oracle, outcomeSet, event
     let transactionMined, transactions = []
     let market = await this._configInstance.gnosisJS.contracts.Market.at(this._marketAddress)
     let stage = await market.stage()
@@ -142,7 +144,7 @@ class Market {
     } else {
       // Resolve market
       // await this._configInstance.gnosisJS.resolveEvent({event: this._marketInfo.event, outcome: this._marketInfo.winningOutcome})
-      const web3 = this._configInstance.blockchainProvider.getWeb3()
+      // const web3 = this._configInstance.blockchainProvider.getWeb3()
       // Resolve oracle
       oracle = new CentralizedOracle(this._marketInfo, this._configInstance)
       if (!(await oracle.isResolved())) {
@@ -198,7 +200,9 @@ class Market {
         }
         sleep.msleep(TX_LOOKUP_TIME)
       }
+
       logSuccess(`Market ${this._marketAddress} resolved successfully`)
+
       transactionMined = await this.waitForMinedTransaction(marketTxResponse.tx, 'close')
       transactions.push({ "method": "close", "transactionHash": marketTxResponse.tx })
     }

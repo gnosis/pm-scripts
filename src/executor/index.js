@@ -37,43 +37,37 @@ const executor = async (args, executionType) => {
     configInstance.wrapTokens = false
   }
 
-  if (parsedArgs.claimrewards && parsedArgs.claimrewards === true) {
-    // Do claim rewards
-    await claimRewards(configInstance)
-  } else {
-    // Start deploy/resolve process
-    logInfo(`Starting ${executionType}, it could take time...`)
+  // Start deploy/resolve process
+  logInfo(`Starting ${executionType}, it could take time...`)
 
-    // Get current market step from market file
-    const marketFileCopy = marketFile.slice()
-    try {
-      for (let x in marketFileCopy) {
-        let currentMarket = marketFileCopy[x]
-        // Run the stack execution over the current market
-        let updatedMarket = await runProcessStack(configInstance, currentMarket, executionType, parsedArgs.skipFundConfirmation)
-        // Merge updates into the object containing the whole markets' definition
-        marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
-      }
-      logInfo(`${executionType} done, writing updates to ${parsedArgs.marketPath}`)
-    } catch (error) {
-      // Error logged to console by function raising the error
-      logWarn('Writing updates before aborting...')
-      abort = true
-    } finally {
-      // Instantiate file writer and write updates before stopping the execution
-      const fileWriter = new FileWriter(parsedArgs.marketPath, [], false)
-      fileWriter.setFilePath(parsedArgs.marketPath)
-      fileWriter.setData(marketFileCopy)
-      fileWriter.write()
-      if (abort) {
-        logWarn('Updates written successfully, aborting')
-        process.exit(1)
-      } else {
-        logSuccess(`Updates written successfully to ${parsedArgs.marketPath}`)
-        process.exit(0)
-      }
+  // Get current market step from market file
+  const marketFileCopy = marketFile.slice()
+  try {
+    for (let x in marketFileCopy) {
+      let currentMarket = marketFileCopy[x]
+      // Run the stack execution over the current market
+      let updatedMarket = await runProcessStack(configInstance, currentMarket, executionType, parsedArgs.skipFundConfirmation)
+      // Merge updates into the object containing the whole markets' definition
+      marketFileCopy[x] = Object.assign(currentMarket, updatedMarket)
     }
-
+    logInfo(`${executionType} done, writing updates to ${parsedArgs.marketPath}`)
+  } catch (error) {
+    // Error logged to console by function raising the error
+    logWarn('Writing updates before aborting...')
+    abort = true
+  } finally {
+    // Instantiate file writer and write updates before stopping the execution
+    const fileWriter = new FileWriter(parsedArgs.marketPath, [], false)
+    fileWriter.setFilePath(parsedArgs.marketPath)
+    fileWriter.setData(marketFileCopy)
+    fileWriter.write()
+    if (abort) {
+      logWarn('Updates written successfully, aborting')
+      process.exit(1)
+    } else {
+      logSuccess(`Updates written successfully to ${parsedArgs.marketPath}`)
+      process.exit(0)
+    }
   }
 }
 

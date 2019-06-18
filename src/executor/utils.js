@@ -9,7 +9,7 @@ import {
   DEFAULT_CONFIG_FILE_PATH, DEFAULT_MARKET_FILE_PATH, EXECUTION_TYPES,
   MARKET_STAGES, SDK_VERSION
 } from './../utils/constants'
-import { logSuccess, logInfo, logError, logWarn } from './../utils/log'
+import { logInfo, logError, logWarn } from './../utils/log'
 import { readFile, fileExists } from './../utils/os'
 import Client from './../clients/ethereum'
 import CentralizedOracle from './../oracles/centralizedOracle'
@@ -20,7 +20,7 @@ import Market from './../markets'
 import MarketValidator from './../validators/marketValidator'
 import ConfigValidator from './../validators/configValidator'
 import { claimRewards } from './../utils/rewards'
-import { deploySteps, resolutionSteps } from './steps'
+import { claimRewardsSteps, deploySteps, resolutionSteps } from './steps'
 
 
 /**
@@ -28,8 +28,7 @@ import { deploySteps, resolutionSteps } from './steps'
 * See ConfigValidator.normalize()
 */
 const printConfiguration = (configuration) => {
-  logInfo('')
-  logSuccess('===== Your configuration =====')
+  logInfo('=========== Configuration ===========')
   logInfo(`===== Account: ${configuration.account}`)
   logInfo(`===== Blockchain: ${configuration.blockchainUrl}`)
   logInfo(`===== TradingDB: ${configuration.tradingDBUrl}`)
@@ -37,8 +36,7 @@ const printConfiguration = (configuration) => {
   logInfo(`===== Gas Price: ${configuration.gasPrice}`)
   logInfo(`===== Gas Limit: ${configuration.gasLimit}`)
   logInfo(`===== Collateral Token: ${configuration.collateralToken}`)
-  logSuccess('==============================')
-  logInfo('')
+  logInfo('=====================================')
 }
 
 /**
@@ -55,7 +53,7 @@ const printTokenBalance = async configInstance => {
   if (configInstance.wrapTokens && configInstance.wrapTokens === true) {
     message += `, will wrap ${configInstance.amountOfTokens / 1e18} ${tokenSymbol} (${tokenName}) more`
   }
-  logSuccess(message)
+  logInfo(message)
 }
 
 /**
@@ -64,8 +62,7 @@ const printTokenBalance = async configInstance => {
 const printMarketCosts = marketDescription => {
   let total = 0
 
-  logInfo('')
-  logSuccess('===== Deployment costs recap =====')
+  logInfo('===== Deployment costs recap =====')
 
   marketDescription.costs.forEach(costObj => {
     logInfo(`===== ${costObj.method}: ${costObj.cost / 1e9} ETH`)
@@ -73,8 +70,7 @@ const printMarketCosts = marketDescription => {
   })
 
   logInfo(`===== TOTAL: ${total / 1e9} ETH`)
-  logSuccess('==================================')
-  logInfo('')
+  logInfo('==================================\n')
 }
 
 /**
@@ -87,9 +83,8 @@ const printAccountBalance = async configInstance => {
     configInstance.blockchainUrl
   )
   const balance = (await client.getBalance(configInstance.account)) / 1e18
-  logInfo('')
-  logSuccess(`Your Ethereum address is ${configInstance.account}`)
-  logSuccess(`Your account balance is ${balance} ETH`)
+  logInfo(`Your Ethereum address is ${configInstance.account}`)
+  logInfo(`Your account balance is ${balance} ETH`)
 }
 
 /**
@@ -114,19 +109,18 @@ const getMarketStep = (marketDescription, executionType) => {
   const steps = {}
   steps[EXECUTION_TYPES.deploy] = deploySteps
   steps[EXECUTION_TYPES.resolve] = resolutionSteps
+  steps[EXECUTION_TYPES.claimRewards] = claimRewardsSteps
 
   const lookupSteps = steps[executionType]
+
+  if (!lookupSteps) {
+    throw new Error(`${executionType} doesn't have any execution steps associated with it.`)
+  }
+
   for (let key in lookupSteps) {
     if (!(key in marketDescription)) {
       return lookupSteps[key]
     }
-    // else if (lookupSteps[x] in marketDescription && (
-    //   marketDescription[lookupSteps[x]] === null ||
-    //   marketDescription[lookupSteps[x]] === undefined ||
-    //   (typeof marketDescription[lookupSteps[x]] === 'string' &&
-    //     marketDescription[lookupSteps[x]].trim()) === '')) {
-    //   return lookupSteps[x]
-    // }
     else if (key in marketDescription && !marketDescription[key]) { // if value is empty
       return lookupSteps[key]
     }
@@ -141,7 +135,11 @@ const getMarketStep = (marketDescription, executionType) => {
 * accordingly the market type and the decimals in case of Scalar markets.
 */
 const formatWinningOutcome = marketInfo => {
-  return marketInfo.outcomes ? marketInfo.outcomes[marketInfo.winningOutcome] : `${marketInfo.winningOutcome / (10 ** marketInfo.decimals)} ${marketInfo.unit}`
+  const formattedOutcome = marketInfo.outcomes ? marketInfo.outcomes[marketInfo.winningOutcome] : `${marketInfo.winningOutcome / (10 ** marketInfo.decimals)} ${marketInfo.unit}`
+  if (!formattedOutcome) {
+    throw Error(`An invalid winning outcome was provided, an number was expected, got \`${marketInfo.winningOutcome}\` instead, please review it in your markets file.`)
+  }
+  return formattedOutcome
 }
 
 /**
@@ -179,7 +177,7 @@ const isMarketResolved = async (marketDescription, configInstance) => {
 * Returns True if market resolved, False otherwise
 */
 const isMarketFunded = async (marketDescription, configInstance) => {
-  logInfo('Check market was already funded...')
+  logInfo(`Check if market ${marketDescription.marketAddress} was already funded...`)
   const market = new Market(marketDescription, configInstance)
   const stage = await market.getStage()
 
@@ -211,7 +209,7 @@ const getMarketsFile = (filePath, print) => {
   }
 
   if (print) {
-    logSuccess('Your market file content:')
+    logInfo('====== Market file content ======')
     logInfo(JSON.stringify(marketFile, undefined, 4))
   }
 
@@ -406,10 +404,15 @@ const runProcessStack = async (configInstance, marketDescription, executionType,
             }
 
             // Get a human readable representation of the outcome set
-            const formattedOutcome = formatWinningOutcome(marketDescription)
-            if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome \`${formattedOutcome}\`?`, false)) {
-              // skip
-              break
+            try {
+              const formattedOutcome = formatWinningOutcome(marketDescription)
+              if (!askConfirmation(`Do you wish to resolve the market ${marketDescription.marketAddress} with outcome \`${formattedOutcome}\`?`, false)) {
+                // skip
+                break
+              } 
+            } catch (error) {
+              logError(error)
+              throw error
             }
           } else {
             logInfo(`Market ${marketDescription.marketAddress} is already resolved, skipping it`)
@@ -422,11 +425,14 @@ const runProcessStack = async (configInstance, marketDescription, executionType,
       }
   
       try {
-        logInfo(`Ready to execute ${currentStep.name}`)
+        logInfo(`Ready to execute \`${currentStep.extendedName}\``)
         // Execute step's function
-        marketDescription = await currentStep.function(marketDescription, configInstance) 
-        // Print costs recap
-        printMarketCosts(marketDescription)
+        marketDescription = await currentStep.function(marketDescription, configInstance)
+        // Print market creation/resolution costs recap if we're on last step
+        if (!currentStep.next) {
+          // Print costs recap
+          printMarketCosts(marketDescription)
+        }
       } catch (error) {
         logError(error)
         throw error
@@ -462,7 +468,7 @@ const versionHelper = () => {
 
 module.exports = {
   askConfirmation,
-  claimRewards,
+  claimRewards, 
   formatWinningOutcome,
   getMarketsFile,
   getValidConfigFile,
