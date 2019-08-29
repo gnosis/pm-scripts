@@ -2,7 +2,7 @@ const isPlayMoneyToken = async configInstance => {
   try {
     const web3 = configInstance.blockchainProvider.getWeb3()
     const contractCode = web3.eth.getCode(configInstance.collateralToken)
-    if (!contractCode || contractCode.replace("0x", "").replace(/0/g, "") === '') {
+    if (!contractCode || contractCode.toString().replace("0x", "").replace(/0/g, "") === '') {
       // doesn't exist
       return false
     }
