@@ -52,7 +52,7 @@
     "@gnosis.pm/pm-js": "2.2.0",
     "axios": "0.18.0",
     "ethereumjs-abi": "^0.6.5",
-    "minimist": "1.2.0",
+    "minimist": "1.2.6",
     "moment": "2.22.2",
     "readline-sync": "1.4.9",
     "secp256k1": "3.5.0",
